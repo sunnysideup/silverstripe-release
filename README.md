@@ -29,6 +29,7 @@ pipelines:
 6. add to your repo `release.sh`
 
 ```shell
+git fetch --all
 git pull
 composer install --no-dev
 vendor/bin/sake dev/build flush=all
