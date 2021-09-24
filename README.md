@@ -29,11 +29,12 @@ pipelines:
 6. add to your repo `release.sh`
 
 ```shell
+git pull
 composer install --no-dev
 vendor/bin/sake dev/build flush=all
 bash npm-build-script.sh
 ```
-OR
+OR (with backup)
 
 ```shell
 wget https://silverstripe.github.io/sspak/sspak.phar
