@@ -33,7 +33,22 @@ composer install --no-dev
 vendor/bin/sake dev/build flush=all
 bash npm-build-script.sh
 ```
+OR
 
+```shell
+wget https://silverstripe.github.io/sspak/sspak.phar
+chmod +x sspak.phar
+
+rm backup.sspak
+php sspak.phar save --db . backup.sspak 
+
+
+git fetch --all
+git status
+git pull
+composer install --no-dev
+vendor/bin/sake dev/build flush=all
+```
 
 7. add to your repo `npm-build-script.sh`
 
@@ -46,3 +61,5 @@ ssh myserver 'cd container/application/; bash release.sh'
 ```
 
 
+# option 3
+only release tags? 
