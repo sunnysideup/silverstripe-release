@@ -50,6 +50,7 @@ git status
 git pull
 composer install --no-dev
 vendor/bin/sake dev/build flush=all
+npm-build-script.sh
 ```
 
 7. add to your repo `npm-build-script.sh`
