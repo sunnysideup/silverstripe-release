@@ -1,3 +1,9 @@
+# best practice
+
+ - Whenever you push to a branch, it releases on a server (test / production).
+ - Dist files are buid on the server
+ - We are able to roll back
+
 # option 1 - use BEAM
  
  - https://github.com/heyday/beam/
@@ -29,28 +35,39 @@ pipelines:
 6. add to your repo `release.sh`
 
 ```shell
+echo "=========================" >> release.log
+echo "Time: $(date). START UPDATE: " >> release.log
+git describe --all --long > release.log
 git fetch --all
 git pull
 composer install --no-dev
 vendor/bin/sake dev/build flush=all
 bash npm-build-script.sh
+git describe --all --long > release.log
 ```
 OR (with backup)
 
 ```shell
+echo "=========================" >> release.log
+echo "Time: $(date). START UPDATE: " >> release.log
+
 wget https://silverstripe.github.io/sspak/sspak.phar
 chmod +x sspak.phar
 
 rm backup.sspak
 php sspak.phar save --db . backup.sspak 
 
-
+git describe --all --long > release.log
 git fetch --all
 git status
 git pull
+
 composer install --no-dev
 vendor/bin/sake dev/build flush=all
+
 npm-build-script.sh
+
+git describe --all --long > release.log
 ```
 
 7. add to your repo `npm-build-script.sh`
