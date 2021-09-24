@@ -17,7 +17,7 @@ pipelines:
     development:
       - step:
           script:
-            - ssh -o StrictHostKeyChecking=no a@111.222.333.444 'cd ./container/application; bash release.sh'
+            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash release.sh'
 
     master:
       - step:
