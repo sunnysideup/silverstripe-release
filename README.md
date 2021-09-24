@@ -6,7 +6,7 @@
 
  1. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
  2. add ssh key to server (see if you can just add it to ~/.ssh/authorized_keys) / may have to added to control panel
- 3. add `bitbucket` user to ser
+ 3. add `bitbucket` user to server
  4. turn on pipelines in bitbucket.com
  5. write file below as `bitbucket-pipelines.yml`
 
