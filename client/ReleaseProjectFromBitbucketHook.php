@@ -40,7 +40,7 @@ class ReleaseProjectFromBitbucketHook
     {
         foreach (['ip', 'webhohookSecret', 'releaseScript', 'webhookSecretProvided'] as $var) {
             if (empty($this->{$var})) {
-                user_error('You need to set ' . $var;
+                user_error('You need to set ' . $var);
                 $this->abort();
 
                 return false;
