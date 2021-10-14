@@ -40,7 +40,7 @@ class ReleaseProjectFromBitbucketHook
     {
         foreach (['ip', 'webhohookSecret', 'releaseScript', 'webhookSecretProvided'] as $var) {
             if (empty($this->{$var})) {
-                user_error('You need to set ' . $var, E_USER_NOTICE);
+                user_error('You need to set ' . $var;
                 $this->abort();
 
                 return false;
@@ -110,7 +110,7 @@ class ReleaseProjectFromBitbucketHook
          * IP validation - only allow requests for Atlassian IPs
          */
         $allow = false;
-        foreach ($allowedCIDRS as $cidr) {
+        foreach ($this->allowedCIDRS as $cidr) {
             $allow = isIpInRange($ip, $cidr);
             if ($allow) {
                 break;
