@@ -17,22 +17,40 @@ class ReleaseProjectFromBitbucketHook
       
     public function run()
     {
-        $this->getVars();
-        if($this->securityChecks()) {
-            shell_exec('bash '.$this->releaseScript);
+        if($this->getVars()) {
+            if($this->securityChecks()) {
+                shell_exec('bash '.$this->releaseScript);
+            }
         }
     }
   
-    private function getVars()
+    private function getVars() :bool
     {
         $this->ip = $_SERVER['REMOTE_ADDR'];
         $this->webhookSecret = getenv('SS_RELEASE_TOKEN');
         $this->releaseScript = getenv('SS_RELEASE_SCRIPT');
         $this->webhookSecretProvided = empty($_GET['ts']) ? '' : $_GET['ts'];
-        $this->getAtlassionIpRanges();
+        if($this->basicCheck() ) {  
+            $this->getAtlassionIpRanges();
+            return true;
+        }
+        return false;
     }
     
-    private function isIpInRange($ip, $range) {
+    private function basicCheck() : bool
+    {
+        foreach(['ip', 'webhohookSecret', 'releaseScript', 'webhookSecretProvided'] as $var) {
+            if(empty($this->{$var})) {
+                user_error('You need to set '.$var, E_USER_NOTICE);
+                $this->abort();
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private function isIpInRange($ip, $range) : bool
+    {
         list($range, $netmask) = explode('/', $range, 2);
         $ipLong = ip2long($ip);
         $rangeLong = ip2long($range);
@@ -42,7 +60,8 @@ class ReleaseProjectFromBitbucketHook
         return (($ipLong & $netmask) == ($rangeLong & $netmask));
     }
     
-    private function abort() {
+    private function abort() 
+    {
         header('HTTP/1.1 403 Forbidden');
         exit;
     }
@@ -58,7 +77,7 @@ class ReleaseProjectFromBitbucketHook
         * Get CIDRs (Classless Inter-Domain Routing)
         */
         foreach($ranges->items as $item) {
-            $allowedCIDRS[] = $item->cidr;
+            $this->allowedCIDRS[] = $item->cidr;
         }
     }
 
