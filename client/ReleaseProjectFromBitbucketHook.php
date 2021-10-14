@@ -1,6 +1,6 @@
 <?php
 
-$obj = new ReleaseProjectFromBitbucketHook()
+$obj = new ReleaseProjectFromBitbucketHook();
 $obj->run();
 
 
@@ -19,7 +19,7 @@ class ReleaseProjectFromBitbucketHook
     {
         $this->getVars();
         if($this->securityChecks()) {
-            shell_exec('cd ../../ ; bash release-test.sh');
+            shell_exec('bash '.$this->releaseScript);
         }
     }
   
