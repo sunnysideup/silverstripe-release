@@ -82,4 +82,18 @@ ssh myserver 'cd container/application/; bash release.sh'
 
 
 # option 3
-only release tags? 
+use this module:
+
+### first 
+set:
+ - `SS_RELEASE_TOKEN=" ___ HELLO ___ OR SOMETHING LIKE THAT __"`
+ - `SS_RELEASE_SCRIPT="~/container/application/run.sh"`
+in your `.env` file. 
+
+### next
+
+add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited) 
+
+### after that
+
+create a release script on your server using a name you like. 
