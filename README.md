@@ -92,8 +92,9 @@ in your `.env` file.
 
 ### next
 
+create a release script on your server using a name you like `~/container/application/run.sh`
+
+### finally
+
 add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited) 
 
-### after that
-
-create a release script on your server using a name you like. 
