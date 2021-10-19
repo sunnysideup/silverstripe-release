@@ -111,7 +111,7 @@ class ReleaseProjectFromBitbucketHook
         foreach([$optionA, $optionB, $optionC] as $scriptPath) {
             if(file_exists($scriptPath)) {
                 $scriptPath = realpath($scriptPath);
-                if(is_executable($scriptPath) || 1 === 1) {
+                if(is_executable($scriptPath)) {
                     echo '<h1>'.$scriptPath.'</h1>';
                     $output = shell_exec('bash ' . $scriptPath.' 2>&1');
                     echo "<pre>$output</pre>";
