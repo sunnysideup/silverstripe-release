@@ -24,7 +24,7 @@ create a release script on your server using a name you like `~/container/applic
 
 ### finally
 
-add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited)
+add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 
 
 # option 2 - use BEAM
 
