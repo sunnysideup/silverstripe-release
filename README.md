@@ -6,11 +6,31 @@ release should be easy ....
  - Dist files are build on the server (where possible)
  - We are able to roll back (db + code)
 
-# option 1 - use BEAM
+Here are three options on how to achieve this: 
+
+
+# option 1 - use bitbucket book with this module. 
+use this module:
+
+### first
+set:
+ - `SS_RELEASE_TOKEN=" ___ HELLO ___ OR SOMETHING LIKE THAT __"`
+ - `SS_RELEASE_SCRIPT="~/container/application/run.sh"`
+in your `.env` file.
+
+### next
+
+create a release script on your server using a name you like `~/container/application/run.sh`
+
+### finally
+
+add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited)
+
+# option 2 - use BEAM
 
  - https://github.com/heyday/beam/
 
-# option 2 - use bitbucket pipepline
+# option 3 - use bitbucket pipepline
 
  1. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
  2. add ssh key to server (see if you can just add it to ~/.ssh/authorized_keys) / may have to added to control panel
@@ -88,20 +108,3 @@ You can then also run this locally:
 ssh myserver 'cd container/application/; bash release.sh'
 ```
 
-
-# option 3 - use bitbucket book with this module. 
-use this module:
-
-### first
-set:
- - `SS_RELEASE_TOKEN=" ___ HELLO ___ OR SOMETHING LIKE THAT __"`
- - `SS_RELEASE_SCRIPT="~/container/application/run.sh"`
-in your `.env` file.
-
-### next
-
-create a release script on your server using a name you like `~/container/application/run.sh`
-
-### finally
-
-add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited)
