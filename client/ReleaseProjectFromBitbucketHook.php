@@ -134,7 +134,7 @@ class ReleaseProjectFromBitbucketHook
         return true;
     }
 
-    private function findDotEnvFile(string $path)
+    private function findDotEnvFile(): void
     {
         $x = 0;
         $myPath = $this->path;
