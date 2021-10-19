@@ -15,13 +15,13 @@ use this module:
 ### first
 set:
  - `SS_RELEASE_TOKEN=" ___ HELLO ___ OR SOMETHING LIKE THAT __"`
- - `SS_RELEASE_SCRIPT="~/container/application/run.sh"`
+ - `SS_RELEASE_SCRIPT="run.sh"`
 
 in your `.env` file.
 
 ### next
 
-create a release script on your server using a name you like `~/container/application/run.sh`
+create a release script in the root of your silverstripe project (e.g. `run.sh`)
 
 ### finally
 
