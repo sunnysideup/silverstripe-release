@@ -100,9 +100,9 @@ git describe --all --long > release.log
 
 7. add to your repo `npm-build-script.sh`
 
-### note
+# bonus idea
 
-You can then also run this locally:
+Once you have a release file on the server, you can then also run this locally:
 
 ```shell
 ssh myserver 'cd container/application/; bash release.sh'
