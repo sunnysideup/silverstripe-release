@@ -75,9 +75,6 @@ class ReleaseProjectFromBitbucketHook
          * Token validation, that comes from the Bitbucket Webhook setup
          */
         if ($this->webhookSecretProvided !== $this->webhookSecret) {
-            echo $this->webhookSecretProvided;
-            echo '=';
-            echo $this->webhookSecret;
             $this->abort('Token does not match: ');
 
             return false;
