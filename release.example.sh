@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# change to current dir (important)
+cd "$(dirname "$0")"
+
 # get all the latest changes from git - just so you have them. NOT APPLIED
 git fetch --all
 
@@ -5,7 +10,7 @@ git fetch --all
 git branch
 
 # pull the latest of the current branch, may need to specify the branch - e.g. git pull origin mybranch
-git pull 
+git pull
 
 # install composer - CHECK FOR ERRORS! - best solution: deleted vendor/ folder (rm vendor -rf) - and install from scratch
 # this may also help: remove public/resources (rm public/resources -rf)
@@ -14,7 +19,7 @@ composer install --no-dev
 
 # build database - check for errors
 # build database - check for errors
-vendor/bin/sake dev/build 
+vendor/bin/sake dev/build
 vendor/bin/sake dev/build flush=all
 
 echo '=============================================='
@@ -26,5 +31,3 @@ echo '=============================================='
 
 
 # MUST OPEN FRONT-END WITH ?flush=all
-
-

@@ -5,7 +5,7 @@
  - We are able to roll back
 
 # option 1 - use BEAM
- 
+
  - https://github.com/heyday/beam/
 
 # option 2 - use bitbucket pipepline
@@ -35,6 +35,9 @@ pipelines:
 6. add to your repo `release.sh`
 
 ```shell
+#!/bin/bash
+cd "$(dirname "$0")"
+
 echo "=========================" >> release.log
 echo "Time: $(date). START UPDATE: " >> release.log
 git describe --all --long > release.log
@@ -48,6 +51,9 @@ git describe --all --long > release.log
 OR (with backup)
 
 ```shell
+#!/bin/bash
+cd "$(dirname "$0")"
+
 echo "=========================" >> release.log
 echo "Time: $(date). START UPDATE: " >> release.log
 
@@ -55,7 +61,7 @@ wget https://silverstripe.github.io/sspak/sspak.phar
 chmod +x sspak.phar
 
 rm backup.sspak
-php sspak.phar save --db . backup.sspak 
+php sspak.phar save --db . backup.sspak
 
 git describe --all --long > release.log
 git fetch --all
@@ -84,11 +90,11 @@ ssh myserver 'cd container/application/; bash release.sh'
 # option 3
 use this module:
 
-### first 
+### first
 set:
  - `SS_RELEASE_TOKEN=" ___ HELLO ___ OR SOMETHING LIKE THAT __"`
  - `SS_RELEASE_SCRIPT="~/container/application/run.sh"`
-in your `.env` file. 
+in your `.env` file.
 
 ### next
 
@@ -96,5 +102,4 @@ create a release script on your server using a name you like `~/container/applic
 
 ### finally
 
-add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited) 
-
+add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 (edited)
