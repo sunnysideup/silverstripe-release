@@ -5,6 +5,12 @@ $obj->run();
 
 class ReleaseProjectFromBitbucketHook
 {
+    /**
+     * The directory where the .env file can be located.
+     *
+     * @var string
+     */
+    protected $path = '.env';
     private $allow = false;
     private $ip = '';
     private $allowedCIDRS = [];
@@ -23,6 +29,8 @@ class ReleaseProjectFromBitbucketHook
 
     private function getVars(): bool
     {
+        $this->findDotEnvFile();
+        $this->loadDotEnvFile();
         $this->ip = $_SERVER['REMOTE_ADDR'];
         $this->webhookSecret = getenv('SS_RELEASE_TOKEN');
         $this->releaseScript = getenv('SS_RELEASE_SCRIPT');
@@ -38,7 +46,7 @@ class ReleaseProjectFromBitbucketHook
 
     private function basicCheck(): bool
     {
-        foreach (['ip', 'webhohookSecret', 'releaseScript', 'webhookSecretProvided'] as $var) {
+        foreach (['ip', 'webhookSecret', 'releaseScript', 'webhookSecretProvided'] as $var) {
             if (empty($this->{$var})) {
                 user_error('You need to set ' . $var);
                 $this->abort();
@@ -124,5 +132,41 @@ class ReleaseProjectFromBitbucketHook
         }
 
         return true;
+    }
+
+    private function findDotEnvFile(string $path)
+    {
+        $x = 0;
+        $myPath = $this->path;
+        while ($x < 30 && ! file_exists($myPath)) {
+            $myPath .= '../' . $myPath;
+            ++$x;
+        }
+        if (! file_exists($myPath)) {
+            throw new \InvalidArgumentException(sprintf('%s does not exist', $myPath));
+        }
+        $this->path = $myPath;
+    }
+
+    private function loadDotEnvFile(): void
+    {
+        if (! is_readable($this->path)) {
+            throw new \RuntimeException(sprintf('%s file is not readable', $this->path));
+        }
+
+        $lines = file($this->path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (0 === strpos(trim($line), '#')) {
+                continue;
+            }
+
+            list($name, $value) = explode('=', $line, 2);
+            $name = trim($name);
+            $value = trim($value);
+
+            if (! array_key_exists($name, $_SERVER) && ! array_key_exists($name, $_ENV)) {
+                putenv(sprintf('%s=%s', $name, $value));
+            }
+        }
     }
 }
