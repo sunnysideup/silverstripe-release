@@ -1,8 +1,10 @@
 # best practice
 
- - Whenever you push to a branch, it releases on a server (test / production).
- - Dist files are buid on the server
- - We are able to roll back
+release should be easy ....
+
+ - Whenever you push to a designated branch, it releases on a server (test / production).
+ - Dist files are build on the server (where possible)
+ - We are able to roll back (db + code)
 
 # option 1 - use BEAM
 
@@ -87,7 +89,7 @@ ssh myserver 'cd container/application/; bash release.sh'
 ```
 
 
-# option 3
+# option 3 - use bitbucket book with this module. 
 use this module:
 
 ### first
