@@ -109,3 +109,6 @@ Once you have a release file on the server, you can then also run this locally:
 ssh myserver 'cd container/application/; bash release.sh'
 ```
 
+# pipelines with extra stuff:
+
+https://github.com/brettt89/silverstripe-docker
