@@ -33,6 +33,7 @@ add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/relea
 
 # option 3 - use bitbucket pipepline
 
+ 1. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines) 
  1. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
  2. add ssh key to server (see if you can just add it to ~/.ssh/authorized_keys) / may have to added to control panel
  3. add `bitbucket` user to server
