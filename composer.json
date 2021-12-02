@@ -1,34 +1,37 @@
 {
-    "name": "sunnysideup/release",
-    "type": "silverstripe-vendormodule",
-    "description": "Auto-release latest version of a branch.",
-    "keywords": [
-        "Silverstripe-CMS",
-        "CMS",
-        "Silverstripe",
-        "git",
-        "pipelines",
-        "bitbucket",
-        "CI",
-        "release"
-    ],
-    "license": "BSD-3-Clause",
-    "authors": [
-        {
-            "name": "Art Karasyov",
-            "email": "art@sunnysideup.co.nz",
-            "role": "lead developer"
-        },
-        {
-            "name": "Nicolaas Francken",
-            "email": "modules@sunnysideup.co.nz",
-            "role": "lead developer"
-        }
-
-    ],
-    "extra": {
-        "expose": [
-            "client"
-        ]
+  "name": "sunnysideup/release",
+  "type": "silverstripe-vendormodule",
+  "description": "Auto-release latest version of a branch.",
+  "keywords": [
+    "Silverstripe-CMS",
+    "CMS",
+    "Silverstripe",
+    "git",
+    "pipelines",
+    "bitbucket",
+    "CI",
+    "release"
+  ],
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Art Karasyov",
+      "email": "art@sunnysideup.co.nz",
+      "role": "lead developer"
+    },
+    {
+      "name": "Nicolaas Francken",
+      "email": "modules@sunnysideup.co.nz",
+      "role": "lead developer"
     }
+
+  ],
+  "extra": {
+    "expose": [
+      "client"
+    ]
+  },
+  "bin": [
+    "bin/release"
+  ]
 }

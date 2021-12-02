@@ -1,4 +1,6 @@
 #!/bin/bash
+cd ../../
+
 git show --format="%h" --no-patch >> releaselog.txt
 
 # sspak
@@ -13,7 +15,7 @@ mv release-1.sspak release-2.sspak
 mv release.sspak release-1.sspak
 
 # dump
-php sspak.phar save . --db pre-release.sspak
+php sspak.phar save . --db release.sspak
 
 
 # change to current dir (important)
