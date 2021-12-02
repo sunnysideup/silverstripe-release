@@ -1,4 +1,20 @@
 #!/bin/bash
+git show --format="%h" --no-patch >> releaselog.txt
+
+# sspak
+rm sspak.phar -rf
+wget https://silverstripe.github.io/sspak/sspak.phar
+chmod +x sspak.phar
+
+# move dumps
+rm release-3.sspak -rf
+mv release-2.sspak release-3.sspak
+mv release-1.sspak release-2.sspak
+mv release.sspak release-1.sspak
+
+# dump
+php sspak.phar save . --db pre-release.sspak
+
 
 # change to current dir (important)
 cd "$(dirname "$0")"
