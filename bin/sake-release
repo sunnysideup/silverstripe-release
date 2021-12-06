@@ -1,6 +1,4 @@
 #!/bin/bash
-cd ../../
-
 git show --format="%h" --no-patch >> releaselog.txt
 
 # sspak
