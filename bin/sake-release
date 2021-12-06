@@ -15,10 +15,6 @@ mv release.sspak release-1.sspak
 # dump
 php sspak.phar save . --db release.sspak
 
-
-# change to current dir (important)
-cd "$(dirname "$0")"
-
 # get all the latest changes from git - just so you have them. NOT APPLIED
 git fetch --all
 
