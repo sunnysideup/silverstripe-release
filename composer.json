@@ -32,6 +32,6 @@
     ]
   },
   "bin": [
-    "bin/release"
+    "bin/sake-release"
   ]
 }
