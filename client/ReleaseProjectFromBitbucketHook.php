@@ -35,7 +35,6 @@ class ReleaseProjectFromBitbucketHook
         }
     }
 
-
     protected function getVars(): bool
     {
         $this->absoluteDirOfThisScript = realpath(dirname(__FILE__));
@@ -46,13 +45,9 @@ class ReleaseProjectFromBitbucketHook
         $this->webhookSecret = getenv('SS_RELEASE_TOKEN');
         $this->releaseScript = getenv('SS_RELEASE_SCRIPT');
         $this->webhookSecretProvided = empty($_GET['ts']) ? '' : $_GET['ts'];
-        if ($this->basicCheck()) {
-            return true;
-        }
 
-        return false;
+        return $this->basicCheck();
     }
-
 
     protected function securityChecks()
     {
@@ -94,7 +89,7 @@ class ReleaseProjectFromBitbucketHook
         }
 
         if (! $allow) {
-            $this->abort('Ip ('.$this->ip.') not in range');
+            $this->abort('Ip (' . $this->ip . ') not in range');
 
             return false;
         }
@@ -102,30 +97,25 @@ class ReleaseProjectFromBitbucketHook
         return true;
     }
 
-
     protected function runInner()
     {
         $optionA = $this->releaseScript;
         $optionB = $this->absoluteDirOfThisScript . '/' . $this->releaseScript;
-        $optionC = '../../../../'. $this->releaseScript;
-        foreach([$optionA, $optionB, $optionC] as $scriptPath) {
-            if(file_exists($scriptPath)) {
+        $optionC = '../../../../' . $this->releaseScript;
+        foreach ([$optionA, $optionB, $optionC] as $scriptPath) {
+            if (file_exists($scriptPath)) {
                 $scriptPath = realpath($scriptPath);
-                if(is_executable($scriptPath)) {
-                    echo '<h1>'.$scriptPath.'</h1>';
-                    $output = shell_exec('bash ' . $scriptPath.' 2>&1');
-                    echo "<pre>$output</pre>";
+                if (is_executable($scriptPath)) {
+                    echo '<h1>' . $scriptPath . '</h1>';
+                    $output = shell_exec('bash ' . $scriptPath . ' 2>&1');
+                    echo "<pre>{$output}</pre>";
                     die('<h1>DONE</h1>');
-                } else {
-                    die($scriptPath.' is not executable');
                 }
-            } else {
+                die($scriptPath . ' is not executable');
             }
         }
-        $this->abort('Could not find: '.implode(',', [$optionA, $optionB, $optionC]));
-
+        $this->abort('Could not find: ' . implode(',', [$optionA, $optionB, $optionC]));
     }
-
 
     private function basicCheck(): bool
     {
@@ -162,19 +152,20 @@ class ReleaseProjectFromBitbucketHook
 
     private function abort(string $reason)
     {
-        if($this->isSafeEnvironment()) {
-            echo 'Aborted because of '.$reason;
+        if ($this->isSafeEnvironment()) {
+            echo 'Aborted because of ' . $reason;
         } else {
             header('HTTP/1.1 403 Forbidden');
         }
         exit;
     }
 
-    private function isSafeEnvironment() : bool
+    private function isSafeEnvironment(): bool
     {
         return true;
         $test = strtolower($this->envType);
-        return $test === 'test' || $test === 'dev';
+
+        return 'test' === $test || 'dev' === $test;
     }
 
     /**
@@ -193,11 +184,11 @@ class ReleaseProjectFromBitbucketHook
     private function findDotEnvFile(): void
     {
         $x = 0;
-        $myPath =  '.env';
+        $myPath = '.env';
         $myPathAbsolute = '';
         while ($x < 30) {
-            $myPathAbsolute = realpath($this->absoluteDirOfThisScript .'/'. $myPath);
-            if(file_exists($myPathAbsolute)) {
+            $myPathAbsolute = realpath($this->absoluteDirOfThisScript . '/' . $myPath);
+            if (file_exists($myPathAbsolute)) {
                 $x = 999;
             } else {
                 $myPath = '../' . $myPath;
