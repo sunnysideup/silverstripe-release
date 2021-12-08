@@ -1,5 +1,5 @@
 #!/bin/bash
-git show --format="%h" --no-patch >> releaselog.txt
+git show --format="%h" --no-patch >> release.log
 
 # sspak
 rm sspak.phar -rf
