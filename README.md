@@ -1,3 +1,12 @@
+# sunny side up release strategy
+ 
+ - `features branches` are created for - what for it - new features
+ - they merge into develop
+ - `develop` is (automatically) released on the `test site`.
+ - `develop` is merged into `master`
+ - `master` is tagged
+ - tags are released on the live site.
+ 
 # best practice
 
 release should be easy ....
@@ -33,10 +42,10 @@ add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/relea
 
 # option 3 - use bitbucket pipepline
 
- 1. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines / settings) 
- 2. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
- 3. add ssh key to server in ~/.ssh/authorized_keys. (CONTROL PANEL VERSION: add autorized key to control panel and add `bitbucket` user to server)
- 4. write file below as `bitbucket-pipelines.yml`
+ a. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines / settings) 
+ b. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
+ c. add ssh key to server in ~/.ssh/authorized_keys. (CONTROL PANEL VERSION: add autorized key to control panel and add `bitbucket` user to server)
+ d. write file below as `bitbucket-pipelines.yml`
 
 ```shell
 pipelines:
@@ -54,7 +63,7 @@ pipelines:
 
 ```
 
-6. add to your repo `release.sh`
+ e. add to your repo `release.sh`
 
 ```shell
 #!/bin/bash
@@ -98,9 +107,9 @@ npm-build-script.sh
 git describe --all --long > release.log
 ```
 
-7. add to your repo `npm-build-script.sh`
+ f. add to your repo `npm-build-script.sh`
 
-# bonus idea
+### bonus idea
 
 Once you have a release file on the server, you can then also run this locally:
 
@@ -108,6 +117,16 @@ Once you have a release file on the server, you can then also run this locally:
 ssh myserver 'cd container/application/; bash release.sh'
 ```
 
-# pipelines with extra stuff:
+### pipelines with extra stuff:
 
 https://github.com/brettt89/silverstripe-docker
+
+# Option 4: use sake-release from this module.
+ a. install this module
+ b. on command line browse to root dir and run: 
+ 
+   - `sake-relase` to release the latest version of the current branch.
+   - `sake-relase -l` to release the latest tag
+   - `sake-relase -t 1.0.0` to release a specific tag
+   - `sake-relase -b feature/something` to release the lastet version of a specific branch
+
