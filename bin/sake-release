@@ -1,6 +1,6 @@
 #!/bin/bash
 help_and_exit() {
-    echo "to be completed"
+    echo "use -l true / --latest-tag true to release latest tag"
     exit;
 }
 
