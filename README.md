@@ -1,3 +1,7 @@
+# tl;dr
+
+Install this module: `composer require sunnysideup/release:dev-master` and then run `sake-release` on test server and `sake-release -l` on the live server. 
+
 # philosophy
 
 release should be easy ....
