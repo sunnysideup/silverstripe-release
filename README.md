@@ -42,10 +42,13 @@ add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/relea
 
 # option 3 - use bitbucket pipepline
 
- a. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines / settings) 
- b. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
- c. add ssh key to server in ~/.ssh/authorized_keys. (CONTROL PANEL VERSION: add autorized key to control panel and add `bitbucket` user to server)
- d. write file below as `bitbucket-pipelines.yml`
+##### a. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines / settings) 
+
+##### b. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
+
+##### c. add ssh key to server in ~/.ssh/authorized_keys. (CONTROL PANEL VERSION: add autorized key to control panel and add `bitbucket` user to server)
+
+##### d. write file below as `bitbucket-pipelines.yml`
 
 ```shell
 pipelines:
@@ -63,7 +66,7 @@ pipelines:
 
 ```
 
- e. add to your repo `release.sh`
+##### e. add to your repo `release.sh`
 
 ```shell
 #!/bin/bash
@@ -107,7 +110,7 @@ npm-build-script.sh
 git describe --all --long > release.log
 ```
 
- f. add to your repo `npm-build-script.sh`
+##### f. add to your repo `npm-build-script.sh`
 
 ### bonus idea
 
@@ -122,8 +125,10 @@ ssh myserver 'cd container/application/; bash release.sh'
 https://github.com/brettt89/silverstripe-docker
 
 # Option 4: use sake-release from this module.
- a. install this module
- b. on command line browse to root dir and run: 
+
+##### a. install this module
+
+##### b. on command line browse to root dir and run: 
  
    - `sake-relase` to release the latest version of the current branch.
    - `sake-relase -l` to release the latest tag
