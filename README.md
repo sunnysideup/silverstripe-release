@@ -1,13 +1,4 @@
-# sunny side up release strategy
- 
- - `features branches` are created for - what for it - new features
- - they merge into develop
- - `develop` is (automatically) released on the `test site`.
- - `develop` is merged into `master`
- - `master` is tagged
- - tags are released on the live site.
- 
-# best practice
+# philosophy
 
 release should be easy ....
 
@@ -15,8 +6,17 @@ release should be easy ....
  - Dist files are build on the server (where possible)
  - We are able to roll back (db + code)
 
-Here are three options on how to achieve this: 
 
+# sunny side up release strategy
+ 
+ - `features branches` are created for - wait for it - new features
+ - they then merge into `develop` (merge develop into feature branch fist, test and then merge into develop)
+ - `develop` is (automatically - see below) released on the **test site**.
+ - `develop` is then merged into `master`
+ - `master` is tagged
+ - tags are released on the **live site**.
+
+Here are some options on how to achieve this
 
 # option 1 - use bitbucket book with this module. 
 use this module:
