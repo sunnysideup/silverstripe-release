@@ -40,20 +40,22 @@ git fetch --all
 # check you are on the right branch
 git branch
 
-if($tags) 
+if [ "$tags" = true ] ; then
 
     # Get new tags from remote
     git fetch --tags
-
+    
     # Get latest tag name
     latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
-
+    
     # Checkout latest tag
     git checkout $latestTag
 
 else 
+
     # pull the latest of the current branch, may need to specify the branch - e.g. git pull origin mybranch
     git pull
+
 fi
 
 # install composer - CHECK FOR ERRORS! - best solution: deleted vendor/ folder (rm vendor -rf) - and install from scratch
