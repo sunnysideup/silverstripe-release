@@ -80,13 +80,13 @@ cd "$(dirname "$0")"
 
 echo "=========================" >> release.log
 echo "Time: $(date). START UPDATE: " >> release.log
-git describe --all --long > release.log
+git describe --all --long >> release.log
 git fetch --all
 git pull
 composer install --no-dev
 vendor/bin/sake dev/build flush=all
 bash npm-build-script.sh
-git describe --all --long > release.log
+git describe --all --long >> release.log
 ```
 OR (with backup)
 
@@ -103,7 +103,7 @@ chmod +x sspak.phar
 rm backup.sspak
 php sspak.phar save --db . backup.sspak
 
-git describe --all --long > release.log
+git describe --all --long >> release.log
 git fetch --all
 git status
 git pull
@@ -113,7 +113,7 @@ vendor/bin/sake dev/build flush=all
 
 npm-build-script.sh
 
-git describe --all --long > release.log
+git describe --all --long >> release.log
 ```
 
 ##### f. add to your repo `npm-build-script.sh`
