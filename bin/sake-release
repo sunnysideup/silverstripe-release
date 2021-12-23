@@ -18,7 +18,11 @@ while (( $# )); do
   shift
 done
 
+echo "=========================" >> release.log
+echo "Time: $(date). START UPDATE: " >> release.log
 git show --format="%h" --no-patch >> release.log
+git describe --all --long >> release.log
+
 
 # sspak
 rm sspak.phar -rf
@@ -75,6 +79,13 @@ echo '=============================================='
 echo '=============================================='
 echo '=============================================='
 echo '=============================================='
+
+echo "=========================" >> release.log
+echo "Time: $(date). START UPDATE: " >> release.log
+git show --format="%h" --no-patch >> release.log
+git describe --all --long >> release.log
+echo "=========================" >> release.log
+echo "=========================" >> release.log
 
 
 # MUST OPEN FRONT-END WITH ?flush=all
