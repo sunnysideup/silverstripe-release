@@ -58,7 +58,8 @@ if [ "$tags" = true ] ; then
 else 
 
     # pull the latest of the current branch, may need to specify the branch - e.g. git pull origin mybranch
-    git pull
+    # --no-edit: https://stackoverflow.com/a/30103953/7249528
+    git pull --no-edit
 
 fi
 
