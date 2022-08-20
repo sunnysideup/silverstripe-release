@@ -11,15 +11,23 @@ class ReleaseProjectFromBitbucketHook
      * @var string
      */
     protected $path = '.env';
+
     private $allow = false;
+
     private $ip = '';
+
     private $allowedCIDRS = [
         '127.0.0.1/0',
     ];
+
     private $webhookSecret = '';
+
     private $webhookSecretProvided = '';
+
     private $releaseScript = '';
+
     private $absoluteDirOfThisScript = '';
+
     private $envType = '';
 
     public function run()
@@ -111,9 +119,11 @@ class ReleaseProjectFromBitbucketHook
                     echo "<pre>{$output}</pre>";
                     die('<h1>DONE</h1>');
                 }
+
                 die($scriptPath . ' is not executable');
             }
         }
+
         $this->abort('Could not find: ' . implode(',', [$optionA, $optionB, $optionC]));
     }
 
@@ -142,6 +152,7 @@ class ReleaseProjectFromBitbucketHook
     private function isIpInRange($range): bool
     {
         list($range, $netmask) = explode('/', $range, 2);
+        $netmask = (int) $netmask;
         $ipLong = ip2long($this->ip);
         $rangeLong = ip2long($range);
         $wildcard = pow(2, (32 - $netmask)) - 1;
@@ -157,6 +168,7 @@ class ReleaseProjectFromBitbucketHook
         } else {
             header('HTTP/1.1 403 Forbidden');
         }
+
         exit;
     }
 
@@ -195,9 +207,11 @@ class ReleaseProjectFromBitbucketHook
                 ++$x;
             }
         }
+
         if (! file_exists($myPathAbsolute)) {
             throw new \InvalidArgumentException(sprintf('%s does not exist', $myPathAbsolute));
         }
+
         $this->path = $myPathAbsolute;
     }
 
