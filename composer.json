@@ -15,11 +15,6 @@
   "license": "BSD-3-Clause",
   "authors": [
     {
-      "name": "Art Karasyov",
-      "email": "art@sunnysideup.co.nz",
-      "role": "lead developer"
-    },
-    {
       "name": "Nicolaas Francken",
       "email": "modules@sunnysideup.co.nz",
       "role": "lead developer"
