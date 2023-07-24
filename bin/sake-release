@@ -32,13 +32,20 @@ shift $((OPTIND - 1))
 
 
 # Determine git branch based on environment if not provided
-git_branch=$2
+branch_name=$2
 if [ -z "$2" ]; then
     if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-        git_branch="production"
+        branch_name="production"
     elif [ "$SS_ENVIRONMENT_TYPE" == "dev" ] || [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-        git_branch="develop"
+        branch_name="develop"
     fi
+fi
+if git show-ref --verify --quiet refs/heads/$branch_name; then
+  echo "Branch '$branch_name' exists."
+else
+  echo "Branch '$branch_name' does not exist."
+  git fetch  --all
+  exit 1
 fi
 
 
@@ -86,8 +93,8 @@ git describe --all --long >>release.log
 
 # get git
 # Git actions with chosen branch
-git checkout $git_branch
-git pull origin $git_branch
+git checkout $branch_name
+git pull origin $branch_name
 
 # Provide a flag: dev / test / live
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
@@ -123,7 +130,7 @@ if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     git describe --all --long >>release.log
 
     echo "=========================" >>release.log
-    echo "BRANCH: $git_branch" >>release.log
+    echo "BRANCH: $branch_name" >>release.log
     echo "=========================" >>release.log
     echo "DONE" >>release.log
     echo "=========================" >>release.log
