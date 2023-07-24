@@ -46,8 +46,8 @@ release should be easy ....
  - `features branches` are created for - wait for it - new features
  - they then merge into `develop` (merge develop into feature branch fist, test and then merge into develop)
  - `develop` is (automatically - see below) released on the **test site**.
- - `develop` is then merged into `master`
- - `master` is tagged
+ - `develop` is then merged into `production`
+ - `production` is tagged
  - tags are released on the **live site**.
 
 Here are some options on how to achieve this
