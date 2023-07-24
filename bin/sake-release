@@ -9,17 +9,12 @@ fi
 # Set to running
 touch release-running
 
-# get data
-
 # get data from .env
 source ./.env
 cat  ./.env
 
-
-
 # Process command line options.
 backup=false
-
 
 # do we need to do a backup
 while getopts ":a" opt; do
@@ -46,12 +41,6 @@ if [ -z "$2" ]; then
     fi
 fi
 
-
-# Check that the right number of arguments are provided
-if [ $# -lt 1 ]; then
-    echo "Please provide the environment ('dev', 'test', or 'live') and (OPTIONALL) Git branch"
-    exit 1
-fi
 
 # Optional backup
 if [[ $backup == true ]]; then
@@ -97,7 +86,6 @@ git describe --all --long >>release.log
 
 # get git
 # Git actions with chosen branch
-git fetch --all
 git checkout $git_branch
 git pull origin $git_branch
 
@@ -113,7 +101,9 @@ elif [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
 elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
     echo "LIVE environment"
 else
-    echo "Invalid argument. Please specify 'dev', 'test', or 'live'"
+    echo "Invalid argument. "
+    echo "... Please specify 'dev', 'test',  or 'live' "
+    echo "... or make sure it is set in .env (SS_ENVIRONMENT_TYPE)"
     exit 1
 fi
 
