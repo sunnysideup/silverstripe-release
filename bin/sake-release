@@ -102,10 +102,6 @@ if [ $1 != "dev" ]; then
         wget -S -qO- "${URL_WITH_HASH}"
     fi
 
-    echo ""
-    echo "DONE"
-    echo ""
-
     ###############################
     # FIX FRONT-END
     ###############################
@@ -132,3 +128,13 @@ if [ $1 != "dev" ]; then
 fi
 
 rm release-running -f
+
+
+echo ""
+echo ""
+echo ""
+echo "DONE"
+echo ""
+echo ""
+echo ""
+
