@@ -1,20 +1,54 @@
 #!/bin/bash
 
-# check if release is already running
+# Process command line options.
+backup=false
+
+while getopts ":b" opt; do
+  case ${opt} in
+    b )
+      backup=true
+      ;;
+    \? )
+      echo "Invalid Option: -$OPTARG" 1>&2
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND -1))
+
+# Check if release is already running
 if [ -f "release-running" ]; then
     echo "Release is already running. Exiting."
     exit 1
 fi
 
-# check flag dev/test/live
-if [ $# -eq 0 ]; then
-    echo "No arguments provided. Please specify 'dev', 'test', or 'live'"
+# Check that the right number of arguments are provided
+if [ $# -lt 2 ]; then
+    echo "Please provide two arguments: environment ('dev', 'test', or 'live') and Git branch"
     exit 1
 fi
 
+# Optional backup
+if [[ $backup == true ]]; then
+    mv README.md README.md.bak
+    rm ssbak -rf
+    rm ssbak_linux_amd64.tar.gz -rf
+    wget https://github.com/axllent/ssbak/releases/download/1.1.3/ssbak_linux_amd64.tar.gz
+    tar zxvf ssbak_linux_amd64.tar.gz
+    chmod +x ./ssbak 
+    ./ssbak -h
+    rm ./backup.sspak -rf
+    ./ssbak save . ./backup.sspak
+    rm ssbak -rf
+    rm ssbak_linux_amd64.tar.gz -rf
+    rm LICENSE -rf
+    rm README.md -rf
+    mv README.md.bak README.md
+fi
 
-# set to running
+# Set to running
 touch release-running;
+
 
 # not release data in release.log
 echo "=========================" >> release.log
@@ -24,7 +58,10 @@ date >> release.log
 git describe --all --long >> release.log
 
 # get git
+# Git actions with chosen branch
 git fetch --all
+git checkout $2
+git pull origin $2
 
 # Provide a flag: dev / test / live
 if [ $1 == "dev" ]; then
@@ -34,11 +71,7 @@ if [ $1 == "dev" ]; then
     composer vendor-expose
     vendor/bin/sake dev/build flush=all
 elif [ $1 == "test" ]; then
-    git checkout develop
-    git pull origin develop
 elif [ $1 == "live" ]; then
-    git checkout production
-    git pull origin production
 else
     echo "Invalid argument. Please specify 'dev', 'test', or 'live'"
     exit 1
