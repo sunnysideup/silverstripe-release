@@ -1,92 +1,101 @@
 #!/bin/bash
-help_and_exit() {
-    echo "use -l true / --latest-tag true to release latest tag"
-    exit;
-}
 
-# Get the options
-tag=false
-while (( $# )); do
-  case $1 in
-    -l|--latest-tag)         tag=$2;shift ;;
-    
-    -b|--branch)             branch=$2;shift ;;
-    
-    -*)                      printf 'Unknown option: %q\n\n' "$1";
-                             help_and_exit 1 ;;
-  esac
-  shift
-done
-
-echo "=========================" >> release.log
-echo "Time: $(date). START UPDATE: " >> release.log
-git show --format="%h" --no-patch >> release.log
-git describe --all --long >> release.log
-
-
-# sspak
-rm sspak.phar -rf
-wget https://silverstripe.github.io/sspak/sspak.phar
-chmod +x sspak.phar
-
-# move dumps
-rm release-3.sspak -rf
-mv release-2.sspak release-3.sspak
-mv release-1.sspak release-2.sspak
-mv release.sspak release-1.sspak
-
-# dump
-php sspak.phar save . --db release.sspak
-
-# get all the latest changes from git - just so you have them. NOT APPLIED
-git fetch --all
-
-# check you are on the right branch
-git branch
-
-if [ "$tags" = true ] ; then
-
-    # Get new tags from remote
-    git fetch --tags
-    
-    # Get latest tag name
-    latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
-    
-    # Checkout latest tag
-    git checkout $latestTag
-
-else 
-
-    # pull the latest of the current branch, may need to specify the branch - e.g. git pull origin mybranch
-    # --no-edit: https://stackoverflow.com/a/30103953/7249528
-    git pull --no-edit
-
+# check if release is already running
+if [ -f "release-running" ]; then
+    echo "Release is already running. Exiting."
+    exit 1
 fi
 
-# install composer - CHECK FOR ERRORS! - best solution: deleted vendor/ folder (rm vendor -rf) - and install from scratch
-# this may also help: remove public/resources (rm public/resources -rf)
-# this may also help: remove public/_resources (rm public/_resources -rf)
-composer install --no-dev
+# check flag dev/test/live
+if [ $# -eq 0 ]; then
+    echo "No arguments provided. Please specify 'dev', 'test', or 'live'"
+    exit 1
+fi
 
-# build database - check for errors
-# build database - check for errors
-vendor/bin/sake dev/build
-vendor/bin/sake dev/build flush=all
-sudo -u www-data vendor/bin/sake dev/build flush=all
 
-echo '=============================================='
-echo "now open the website with ?flush=all"
-echo '=============================================='
-echo '=============================================='
-echo '=============================================='
-echo '=============================================='
+# set to running
+touch release-running;
 
+# not release data in release.log
 echo "=========================" >> release.log
 echo "Time: $(date). START UPDATE: " >> release.log
-git show --format="%h" --no-patch >> release.log
+echo "=========================" >> release.log
+date >> release.log
 git describe --all --long >> release.log
-echo "=========================" >> release.log
-echo "=========================" >> release.log
+
+# get git
+git fetch --all
+
+# Provide a flag: dev / test / live
+if [ $1 == "dev" ]; then
+    git checkout develop
+    git pull origin develop
+    composer update --prefer-source
+    composer vendor-expose
+    vendor/bin/sake dev/build flush=all
+elif [ $1 == "test" ]; then
+    git checkout develop
+    git pull origin develop
+elif [ $1 == "live" ]; then
+    git checkout production
+    git pull origin production
+else
+    echo "Invalid argument. Please specify 'dev', 'test', or 'live'"
+    exit 1
+fi
+
+# Only run the following commands if the argument is not "dev"
+if [ $1 != "dev" ]; then
+    composer install --prefer-dist --no-dev
+    vendor/bin/sake dev/build flush=all
+    composer vendor-expose
+
+    git describe --all --long >> release.log
+
+    echo "=========================" >> release.log
+    echo "DONE" >> release.log
+    echo "=========================" >> release.log
+    echo "" >> release.log
+    echo "" >> release.log
+
+    ##########################################
+    # Ping Release if FIA_RELEASE_PING_URL is set
+    ##########################################
+
+    source .env
+    if [ -n "$FIA_RELEASE_PING_URL" ]; then
+        GIT_HASH=$(git rev-parse HEAD)
+        URL_WITH_HASH="${FIA_RELEASE_PING_URL}${GIT_HASH}"
+        wget -S -qO- "${URL_WITH_HASH}"
+    fi
+
+    echo ""
+    echo "DONE"
+    echo ""
+
+    ###############################
+    # FIX FRONT-END
+    ###############################
+    if [ $1 == "test" ]; then
+        sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
+    elif [ $1 == "live" ]; then
+        sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
+    fi
+
+    FILE_PATH="./.env"
+    BASE_URL=$(grep -oP 'SS_BASE_URL="\K[^"]+' $FILE_PATH)
+    # Remove any trailing slash
+    BASE_URL="${BASE_URL%/}"
+    NEW_URL="${BASE_URL}/dev/?flush=all"
+    wget -O  - $NEW_URL
 
 
-# MUST OPEN FRONT-END WITH ?flush=all
+    # Switch SS_ENVIRONMENT_TYPE back to its original value
+    if [ $1 == "test" ]; then
+        sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="test"/g' $FILE_PATH
+    elif [ $1 == "live" ]; then
+        sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
+    fi
+fi
+
+rm release-running -f
