@@ -10,7 +10,6 @@ touch release-running
 
 # get data from .env
 source ./.env
-cat  ./.env
 
 # Process command line options.
 backup=false
