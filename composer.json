@@ -21,7 +21,7 @@
     }
 
   ],
-  "extra": {
+  "extra-example": {
     "expose": [
       "client"
     ]
