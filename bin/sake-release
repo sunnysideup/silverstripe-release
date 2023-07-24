@@ -1,10 +1,27 @@
 #!/bin/bash
 
+# Check if release is already running
+if [ -f "release-running" ]; then
+    echo "Release is already running. Exiting."
+    rm release-running -f
+    exit 1
+fi
+# Set to running
+touch release-running
+
+# get data
+
+# get data from .env
+source ./.env
+cat  ./.env
+
+
+
 # Process command line options.
 backup=false
-source .env
 
-# do we need t
+
+# do we need to do a backup
 while getopts ":a" opt; do
     case ${opt} in
     a)
@@ -18,12 +35,6 @@ while getopts ":a" opt; do
 done
 shift $((OPTIND - 1))
 
-# Check if release is already running
-if [ -f "release-running" ]; then
-    echo "Release is already running. Exiting."
-    rm release-running -f
-    exit 1
-fi
 
 # Determine git branch based on environment if not provided
 git_branch=$2
@@ -35,8 +46,6 @@ if [ -z "$2" ]; then
     fi
 fi
 
-# Set to running
-touch release-running
 
 # Check that the right number of arguments are provided
 if [ $# -lt 1 ]; then
