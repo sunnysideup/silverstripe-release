@@ -55,10 +55,11 @@ if [[ $backup == true ]]; then
     git fetch --tags "https://github.com/axllent/ssbak.git"
 
     # Get the latest tag using 'git describe' command
-    latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+    latest_tag=$(git ls-remote --tags https://github.com/axllent/ssbak.git | grep -v '{}$' | sort -t '/' -k 3 -V | awk -F/ '{print $3}' | tail -n 1)
 
-    # move README out of the way
+    # move README / LICENSE out of the way
     mv README.md README.md.bak
+    mv LICENSE LICENSE.bak
 
     # remove any files left from last time
     rm ssbak -rf
@@ -78,9 +79,12 @@ if [[ $backup == true ]]; then
     # cleanup
     rm ssbak -rf
     rm ssbak_linux_amd64.tar.gz -rf
-    rm LICENSE -rf
+    # fix readme
     rm README.md -rf
     mv README.md.bak README.md
+    # fix license
+    rm LICENSE -rf
+    mv LICENSE.bak LICENSE
 fi
 
 # not release data in release.log
