@@ -28,9 +28,9 @@ fi
 # Determine git branch based on environment if not provided
 git_branch=$2
 if [ -z "$2" ]; then
-    if [ $SS_ENVIRONMENT_TYPE == "live" ]; then
+    if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
         git_branch="production"
-    elif [ $SS_ENVIRONMENT_TYPE == "dev" ] || [ $SS_ENVIRONMENT_TYPE == "test" ]; then
+    elif [ "$SS_ENVIRONMENT_TYPE" == "dev" ] || [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
         git_branch="develop"
     fi
 fi
@@ -93,15 +93,15 @@ git checkout $git_branch
 git pull origin $git_branch
 
 # Provide a flag: dev / test / live
-if [ $SS_ENVIRONMENT_TYPE == "dev" ]; then
+if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
     git checkout develop
     git pull origin develop
     composer update --prefer-source
     composer vendor-expose
     vendor/bin/sake dev/build flush=all
-elif [ $SS_ENVIRONMENT_TYPE == "test" ]; then
+elif [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
     echo "TEST environment"
-elif [ $SS_ENVIRONMENT_TYPE == "live" ]; then
+elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
     echo "LIVE environment"
 else
     echo "Invalid argument. Please specify 'dev', 'test', or 'live'"
@@ -109,7 +109,7 @@ else
 fi
 
 # Only run the following commands if the argument is not "dev"
-if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
+if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
 
     # composer update
     composer install --prefer-dist --no-dev
@@ -144,9 +144,9 @@ if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
     ###############################
     # FIX FRONT-END
     ###############################
-    if [ $SS_ENVIRONMENT_TYPE == "test" ]; then
+    if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
-    elif [ $SS_ENVIRONMENT_TYPE == "live" ]; then
+    elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
     fi
 
@@ -158,9 +158,9 @@ if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
     wget -O - $NEW_URL
 
     # Switch SS_ENVIRONMENT_TYPE back to its original value
-    if [ $SS_ENVIRONMENT_TYPE == "test" ]; then
+    if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="test"/g' $FILE_PATH
-    elif [ $SS_ENVIRONMENT_TYPE == "live" ]; then
+    elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
     fi
 fi
