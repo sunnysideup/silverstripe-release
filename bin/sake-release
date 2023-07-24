@@ -3,9 +3,9 @@
 # Process command line options.
 backup=false
 
-while getopts ":b" opt; do
+while getopts ":a" opt; do
   case ${opt} in
-    b )
+    a )
       backup=true
       ;;
     \? )
@@ -23,8 +23,8 @@ if [ -f "release-running" ]; then
 fi
 
 # Check that the right number of arguments are provided
-if [ $# -lt 2 ]; then
-    echo "Please provide two arguments: environment ('dev', 'test', or 'live') and Git branch"
+if [ $# -lt 1 ]; then
+    echo "Please provide the environment ('dev', 'test', or 'live') and (OPTIONALL) Git branch"
     exit 1
 fi
 
