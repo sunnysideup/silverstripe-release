@@ -99,7 +99,9 @@ if [ $1 == "dev" ]; then
     composer vendor-expose
     vendor/bin/sake dev/build flush=all
 elif [ $1 == "test" ]; then
+    echo "TEST environment"
 elif [ $1 == "live" ]; then
+    echo "LIVE environment"
 else
     echo "Invalid argument. Please specify 'dev', 'test', or 'live'"
     exit 1
