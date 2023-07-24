@@ -141,10 +141,6 @@ if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
         wget -S -qO- "${URL_WITH_HASH}"
     fi
 
-    echo ""
-    echo "DONE"
-    echo ""
-
     ###############################
     # FIX FRONT-END
     ###############################
@@ -169,5 +165,10 @@ if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
     fi
 fi
+
+echo ""
+echo "DONE"
+echo ""
+
 
 rm release-running -f
