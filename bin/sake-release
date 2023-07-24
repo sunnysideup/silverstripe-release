@@ -2,6 +2,7 @@
 
 # Process command line options.
 backup=false
+source .env
 
 while getopts ":a" opt; do
   case ${opt} in
@@ -26,9 +27,9 @@ fi
 # Determine git branch based on environment if not provided
 git_branch=$2
 if [ -z "$2" ]; then
-  if [ $1 == "live" ]; then
+  if [ $SS_ENVIRONMENT_TYPE == "live" ]; then
     git_branch="production"
-  elif [ $1 == "dev" ] || [ $1 == "test" ]; then
+  elif [ $SS_ENVIRONMENT_TYPE == "dev" ] || [ $SS_ENVIRONMENT_TYPE == "test" ]; then
     git_branch="develop"
   fi
 fi
@@ -88,19 +89,19 @@ git describe --all --long >> release.log
 # get git
 # Git actions with chosen branch
 git fetch --all
-git checkout $2
-git pull origin $2
+git checkout $git_branch
+git pull origin $git_branch
 
 # Provide a flag: dev / test / live
-if [ $1 == "dev" ]; then
+if [ $SS_ENVIRONMENT_TYPE == "dev" ]; then
     git checkout develop
     git pull origin develop
     composer update --prefer-source
     composer vendor-expose
     vendor/bin/sake dev/build flush=all
-elif [ $1 == "test" ]; then
+elif [ $SS_ENVIRONMENT_TYPE == "test" ]; then
     echo "TEST environment"
-elif [ $1 == "live" ]; then
+elif [ $SS_ENVIRONMENT_TYPE == "live" ]; then
     echo "LIVE environment"
 else
     echo "Invalid argument. Please specify 'dev', 'test', or 'live'"
@@ -108,13 +109,22 @@ else
 fi
 
 # Only run the following commands if the argument is not "dev"
-if [ $1 != "dev" ]; then
+if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
+
+    # composer update
     composer install --prefer-dist --no-dev
+
+    # build
     vendor/bin/sake dev/build flush=all
+
+    # vendor expose double
     composer vendor-expose
 
+    # record new version
     git describe --all --long >> release.log
 
+    echo "=========================" >> release.log
+    echo "BRANCH: $git_branch" >> release.log
     echo "=========================" >> release.log
     echo "DONE" >> release.log
     echo "=========================" >> release.log
@@ -125,7 +135,6 @@ if [ $1 != "dev" ]; then
     # Ping Release if FIA_RELEASE_PING_URL is set
     ##########################################
 
-    source .env
     if [ -n "$FIA_RELEASE_PING_URL" ]; then
         GIT_HASH=$(git rev-parse HEAD)
         URL_WITH_HASH="${FIA_RELEASE_PING_URL}${GIT_HASH}"
@@ -139,9 +148,9 @@ if [ $1 != "dev" ]; then
     ###############################
     # FIX FRONT-END
     ###############################
-    if [ $1 == "test" ]; then
+    if [ $SS_ENVIRONMENT_TYPE == "test" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
-    elif [ $1 == "live" ]; then
+    elif [ $SS_ENVIRONMENT_TYPE == "live" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
     fi
 
@@ -154,9 +163,9 @@ if [ $1 != "dev" ]; then
 
 
     # Switch SS_ENVIRONMENT_TYPE back to its original value
-    if [ $1 == "test" ]; then
+    if [ $SS_ENVIRONMENT_TYPE == "test" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="test"/g' $FILE_PATH
-    elif [ $1 == "live" ]; then
+    elif [ $SS_ENVIRONMENT_TYPE == "live" ]; then
         sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
     fi
 fi
