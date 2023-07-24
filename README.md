@@ -1,8 +1,36 @@
 # tl;dr
 
-Install this module: `composer require sunnysideup/release:dev-master` and then run `sake-release` on test server and `sake-release -l` on the live server. 
+Install this module: `composer require sunnysideup/release:dev-master` and then run the following commands:
 
-Want more?  Add pipelines to this module for auto-release. 
+### local
+```shell
+# release `develop` branch locally
+vendor/bin/sake-release dev
+
+# release `features/test` branch locally
+vendor/bin/sake-release dev features/test 
+```
+
+### stage / test site
+```shell
+# release `develop` branch 
+vendor/bin/sake-release test
+
+# release `features/test` branch while making a backup first (-a)
+vendor/bin/sake-release -a test features/test
+```
+
+### live / production / prod site
+```shell
+# release `production` branch 
+vendor/bin/sake-release live
+
+# release `production` branch while making a backup first (-a)
+vendor/bin/sake-release live
+
+# release `features/test` branch while making a backup first (-a)
+vendor/bin/sake-release -a live features/test
+```
 
 # philosophy
 
