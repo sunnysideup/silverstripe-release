@@ -113,7 +113,7 @@ elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
 else
     echo "Invalid argument. "
     echo "... Please specify 'dev', 'test',  or 'live' "
-    echo "... or make sure it is set in .env (SS_ENVIRONMENT_TYPE)"
+    echo "... or make sure it is set in the env file (SS_ENVIRONMENT_TYPE)"
     exit 1
 fi
 
