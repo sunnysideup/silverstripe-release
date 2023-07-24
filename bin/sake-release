@@ -4,18 +4,19 @@
 backup=false
 source .env
 
+# do we need t
 while getopts ":a" opt; do
-  case ${opt} in
-    a )
-      backup=true
-      ;;
-    \? )
-      echo "Invalid Option: -$OPTARG" 1>&2
-      exit 1
-      ;;
-  esac
+    case ${opt} in
+    a)
+        backup=true
+        ;;
+    \?)
+        echo "Invalid Option. Option available is -a (archive / make backup): -$OPTARG" 1>&2
+        exit 1
+        ;;
+    esac
 done
-shift $((OPTIND -1))
+shift $((OPTIND - 1))
 
 # Check if release is already running
 if [ -f "release-running" ]; then
@@ -27,15 +28,15 @@ fi
 # Determine git branch based on environment if not provided
 git_branch=$2
 if [ -z "$2" ]; then
-  if [ $SS_ENVIRONMENT_TYPE == "live" ]; then
-    git_branch="production"
-  elif [ $SS_ENVIRONMENT_TYPE == "dev" ] || [ $SS_ENVIRONMENT_TYPE == "test" ]; then
-    git_branch="develop"
-  fi
+    if [ $SS_ENVIRONMENT_TYPE == "live" ]; then
+        git_branch="production"
+    elif [ $SS_ENVIRONMENT_TYPE == "dev" ] || [ $SS_ENVIRONMENT_TYPE == "test" ]; then
+        git_branch="develop"
+    fi
 fi
 
 # Set to running
-touch release-running;
+touch release-running
 
 # Check that the right number of arguments are provided
 if [ $# -lt 1 ]; then
@@ -67,7 +68,7 @@ if [[ $backup == true ]]; then
     tar zxvf ssbak_linux_amd64.tar.gz
     chmod +x ./ssbak
 
-    # backup 
+    # backup
     ./ssbak save . ./backup.sspak
 
     # cleanup
@@ -78,13 +79,12 @@ if [[ $backup == true ]]; then
     mv README.md.bak README.md
 fi
 
-
 # not release data in release.log
-echo "=========================" >> release.log
-echo "Time: $(date). START UPDATE: " >> release.log
-echo "=========================" >> release.log
-date >> release.log
-git describe --all --long >> release.log
+echo "=========================" >>release.log
+echo "Time: $(date). START UPDATE: " >>release.log
+echo "=========================" >>release.log
+date >>release.log
+git describe --all --long >>release.log
 
 # get git
 # Git actions with chosen branch
@@ -121,15 +121,15 @@ if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
     composer vendor-expose
 
     # record new version
-    git describe --all --long >> release.log
+    git describe --all --long >>release.log
 
-    echo "=========================" >> release.log
-    echo "BRANCH: $git_branch" >> release.log
-    echo "=========================" >> release.log
-    echo "DONE" >> release.log
-    echo "=========================" >> release.log
-    echo "" >> release.log
-    echo "" >> release.log
+    echo "=========================" >>release.log
+    echo "BRANCH: $git_branch" >>release.log
+    echo "=========================" >>release.log
+    echo "DONE" >>release.log
+    echo "=========================" >>release.log
+    echo "" >>release.log
+    echo "" >>release.log
 
     ##########################################
     # Ping Release if FIA_RELEASE_PING_URL is set
@@ -155,8 +155,7 @@ if [ $SS_ENVIRONMENT_TYPE != "dev" ]; then
     # Remove any trailing slash
     BASE_URL="${BASE_URL%/}"
     NEW_URL="${BASE_URL}/dev/?flush=all"
-    wget -O  - $NEW_URL
-
+    wget -O - $NEW_URL
 
     # Switch SS_ENVIRONMENT_TYPE back to its original value
     if [ $SS_ENVIRONMENT_TYPE == "test" ]; then
@@ -169,6 +168,5 @@ fi
 echo ""
 echo "DONE"
 echo ""
-
 
 rm release-running -f
