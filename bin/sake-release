@@ -28,17 +28,45 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+# Determine git branch based on environment if not provided
+git_branch=$2
+if [ -z "$2" ]; then
+  if [ $1 == "live" ]; then
+    git_branch="production"
+  elif [ $1 == "dev" ] || [ $1 == "test" ]; then
+    git_branch="develop"
+  fi
+fi
+
+
 # Optional backup
 if [[ $backup == true ]]; then
+
+    # Fetch the latest tags from the GitHub repository
+    git fetch --tags "https://github.com/axllent/ssbak.git"
+
+    # Get the latest tag using 'git describe' command
+    latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+
+    # move README out of the way
     mv README.md README.md.bak
+
+    # remove any files left from last time
     rm ssbak -rf
     rm ssbak_linux_amd64.tar.gz -rf
-    wget https://github.com/axllent/ssbak/releases/download/1.1.3/ssbak_linux_amd64.tar.gz
-    tar zxvf ssbak_linux_amd64.tar.gz
-    chmod +x ./ssbak 
-    ./ssbak -h
     rm ./backup.sspak -rf
+
+    # download latest
+    wget https://github.com/axllent/ssbak/releases/download/$latest_tag/ssbak_linux_amd64.tar.gz
+
+    # install
+    tar zxvf ssbak_linux_amd64.tar.gz
+    chmod +x ./ssbak
+
+    # backup 
     ./ssbak save . ./backup.sspak
+
+    # cleanup
     rm ssbak -rf
     rm ssbak_linux_amd64.tar.gz -rf
     rm LICENSE -rf
@@ -102,6 +130,10 @@ if [ $1 != "dev" ]; then
         wget -S -qO- "${URL_WITH_HASH}"
     fi
 
+    echo ""
+    echo "DONE"
+    echo ""
+
     ###############################
     # FIX FRONT-END
     ###############################
@@ -128,13 +160,3 @@ if [ $1 != "dev" ]; then
 fi
 
 rm release-running -f
-
-
-echo ""
-echo ""
-echo ""
-echo "DONE"
-echo ""
-echo ""
-echo ""
-
