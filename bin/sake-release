@@ -2,8 +2,7 @@
 
 # Check if release is already running
 if [ -f "release-running" ]; then
-    echo "Release is already running. Exiting."
-    rm release-running -f
+    echo "Release is already running. Pleaes remove release-running and run again."
     exit 1
 fi
 # Set to running
