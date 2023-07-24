@@ -19,12 +19,7 @@ shift $((OPTIND -1))
 # Check if release is already running
 if [ -f "release-running" ]; then
     echo "Release is already running. Exiting."
-    exit 1
-fi
-
-# Check that the right number of arguments are provided
-if [ $# -lt 1 ]; then
-    echo "Please provide the environment ('dev', 'test', or 'live') and (OPTIONALL) Git branch"
+    rm release-running -f
     exit 1
 fi
 
@@ -38,6 +33,14 @@ if [ -z "$2" ]; then
   fi
 fi
 
+# Set to running
+touch release-running;
+
+# Check that the right number of arguments are provided
+if [ $# -lt 1 ]; then
+    echo "Please provide the environment ('dev', 'test', or 'live') and (OPTIONALL) Git branch"
+    exit 1
+fi
 
 # Optional backup
 if [[ $backup == true ]]; then
@@ -73,9 +76,6 @@ if [[ $backup == true ]]; then
     rm README.md -rf
     mv README.md.bak README.md
 fi
-
-# Set to running
-touch release-running;
 
 
 # not release data in release.log
