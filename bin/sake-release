@@ -49,17 +49,21 @@ fi
 
 # Optional backup
 if [[ $backup == true ]]; then
+
+    # create backup dir with _manifest_exclude
     mkdir -p ./__backups
     cd ./__backups
     touch _manifest_exclude
 
     # remove any files left from last time
-    rm ssbak -rf
-    rm ssbak_linux_amd64.tar.gz -rf
-    rm ./backup.sspak -rf
+    rm ssbak -f
+    rm ssbak_linux_amd64.tar.gz -f
+    rm LICENSE -f
+    rm README.md -f
+    rm ./backup.sspak -f
 
     # download latest
-    wget -q -O - https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
+    wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
 
     # install
     tar zxvf ssbak_linux_amd64.tar.gz
@@ -69,8 +73,10 @@ if [[ $backup == true ]]; then
     ./ssbak save .. ./backup.sspak
 
     # cleanup
-    rm ssbak -rf
-    rm ssbak_linux_amd64.tar.gz -rf
+    rm ssbak -f
+    rm ssbak_linux_amd64.tar.gz -f
+    rm LICENSE -f
+    rm README.md -f
 
     # go back to previous dir
     cd ../
