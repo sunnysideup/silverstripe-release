@@ -1,5 +1,7 @@
 #!/bin/bash
 
+touch release.log
+
 # Check if release is already running
 if [ -f "release-running" ]; then
     echo "Release is already running. Pleaes remove release-running and run again."
