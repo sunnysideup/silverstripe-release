@@ -26,7 +26,7 @@ vendor/bin/sake-release -a test features/test
 vendor/bin/sake-release live
 
 # release `production` branch while making a backup first (-a)
-vendor/bin/sake-release live
+vendor/bin/sake-release -a live
 
 # release `features/test` branch while making a backup first (-a)
 vendor/bin/sake-release -a live features/test
@@ -41,7 +41,7 @@ release should be easy ....
  - We are able to roll back (db + code)
 
 
-# sunny side up release strategy
+# release strategy
  
  - `features branches` are created for - wait for it - new features
  - they then merge into `develop` (merge develop into feature branch fist, test and then merge into develop)
