@@ -31,7 +31,6 @@ display_help() {
 if [ -f "release-running" ]; then
     echo "Going to sleep for 15 minutes as there is already a release running."
     sleep 900
-    exit 1
 fi
 
 # Set to running
