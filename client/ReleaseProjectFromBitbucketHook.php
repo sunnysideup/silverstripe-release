@@ -49,7 +49,7 @@ class ReleaseProjectFromBitbucketHook
         $this->findDotEnvFile();
         $this->loadDotEnvFile();
         $this->envType = getenv('SS_ENVIRONMENT_TYPE');
-        $this->ip = $_SERVER['REMOTE_ADDR'];
+        $this->ip = filter_var($_SERVER['REQUEST_URI'], FILTER_VALIDATE_IP);
         $this->webhookSecret = getenv('SS_RELEASE_TOKEN');
         $this->releaseScript = getenv('SS_RELEASE_SCRIPT');
         $this->webhookSecretProvided = empty($_GET['ts']) ? '' : $_GET['ts'];
