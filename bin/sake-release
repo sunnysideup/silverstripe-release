@@ -2,18 +2,27 @@
 
 # Function to display help message
 display_help() {
-    echo "Usage: $0 [option...]" >&2
+    rm release-running -f
+    echo
+    echo "Usage: vendor/bin/sake-release [environment type...] [branch...]" >&2
     echo
     echo "   -a                Create a backup"
     echo "   -h                Display this help message and exit"
     echo
-    echo "Example (from project root directory on the live server):"
+    echo "Example (run from project root directory on the live server):"
+    echo
     echo "   vendor/bin/sake-release -a live feature/awesome"
-    echo "This creates an sspak file and releases the feature/awesome branch to a live environment"
+    echo
+    echo "This creates an sspak backup file of your project"
+    echo " and releases the feature/awesome branch to a live environment"
+    echo
     echo "Other examples:"
+    echo
     echo "   vendor/bin/sake-release dev"
     echo "   vendor/bin/sake-release test"
     echo "   vendor/bin/sake-release test my-feature-branch"
+    echo
+    echo
     # add more help options here
     exit 1
 }
