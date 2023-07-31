@@ -1,10 +1,30 @@
 #!/bin/bash
 
+# Function to display help message
+display_help() {
+    echo "Usage: $0 [option...]" >&2
+    echo
+    echo "   -a                Create a backup"
+    echo "   -h                Display this help message and exit"
+    echo
+    echo "Example (from project root directory on the live server):"
+    echo "   vendor/bin/sake-release -a live feature/awesome"
+    echo "This creates an sspak file and releases the feature/awesome branch to a live environment"
+    echo "Other examples:"
+    echo "   vendor/bin/sake-release dev"
+    echo "   vendor/bin/sake-release test"
+    echo "   vendor/bin/sake-release test my-feature-branch"
+    # add more help options here
+    exit 1
+}
+
 # Check if release is already running
 if [ -f "release-running" ]; then
-    echo "Release is already running. Pleaes remove release-running and run again."
+    echo "Going to sleep for 15 minutes as there is already a release running."
+    sleep 900
     exit 1
 fi
+
 # Set to running
 touch release-running
 touch release.log
@@ -16,10 +36,14 @@ source ./.env
 backup=false
 
 # do we need to do a backup
-while getopts ":a" opt; do
+while getopts ":ah" opt; do
     case ${opt} in
     a)
         backup=true
+        echo "Backup will be created"
+        ;;
+    h)
+        display_help
         ;;
     \?)
         echo "Invalid Option. Option available is -a (archive / make backup): -$OPTARG" 1>&2
@@ -39,6 +63,8 @@ if [ -z "$2" ]; then
         branch_name="develop"
     fi
 fi
+
+# check if branch exists
 if git show-ref --verify --quiet refs/heads/$branch_name; then
   echo "Branch '$branch_name' exists."
 else
