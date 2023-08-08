@@ -51,7 +51,7 @@ class ReleaseProjectFromBitbucketHook
         $this->envType = getenv('SS_ENVIRONMENT_TYPE');
         $this->ip = filter_var($_SERVER['REQUEST_URI'], FILTER_VALIDATE_IP);
         $this->webhookSecret = getenv('SS_RELEASE_TOKEN');
-        $this->releaseScript = getenv('SS_RELEASE_SCRIPT');
+        $this->releaseScript = getenv('SS_RELEASE_SCRIPT') ?: 'vendor/bin/sake-release live';
         $this->webhookSecretProvided = empty($_GET['ts']) ? '' : $_GET['ts'];
 
         return $this->basicCheck();
@@ -174,7 +174,6 @@ class ReleaseProjectFromBitbucketHook
 
     private function isSafeEnvironment(): bool
     {
-        return true;
         $test = strtolower($this->envType);
 
         return 'test' === $test || 'dev' === $test;
@@ -238,4 +237,5 @@ class ReleaseProjectFromBitbucketHook
             }
         }
     }
+
 }

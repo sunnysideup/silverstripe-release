@@ -182,24 +182,26 @@ if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     ###############################
     # FIX FRONT-END
     ###############################
-    if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-        sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
-    elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-        sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
-    fi
+    if [ "$SS_RELEASE_FRONT_END"]; then
+        if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
+            sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
+        elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
+            sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
+        fi
 
-    FILE_PATH="./.env"
-    BASE_URL=$(grep -oP 'SS_BASE_URL="\K[^"]+' $FILE_PATH)
-    # Remove any trailing slash
-    BASE_URL="${BASE_URL%/}"
-    NEW_URL="${BASE_URL}/dev/?flush=all"
-    wget -O - $NEW_URL
+        FILE_PATH="./.env"
+        BASE_URL=$(grep -oP 'SS_BASE_URL="\K[^"]+' $FILE_PATH)
+        # Remove any trailing slash
+        BASE_URL="${BASE_URL%/}"
+        NEW_URL="${BASE_URL}/dev/?flush=all"
+        wget -O - $NEW_URL
 
-    # Switch SS_ENVIRONMENT_TYPE back to its original value
-    if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-        sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="test"/g' $FILE_PATH
-    elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-        sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
+        # Switch SS_ENVIRONMENT_TYPE back to its original value
+        if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
+            sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="test"/g' $FILE_PATH
+        elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
+            sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
+        fi
     fi
 fi
 
