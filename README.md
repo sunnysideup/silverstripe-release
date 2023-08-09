@@ -8,98 +8,9 @@ This module helps you release your silverstripe (or other) projects.
 `composer require sunnysideup/release:dev-master` 
 
 
+# release script usage
 
-# philosophy
-
-release should be easy ....
-
- - Whenever you push to a designated branch, it releases on a server (test / production).
- - We are able to roll back (db + code)
-
-
-# release strategy
- 
- - `features branches` are created for - wait for it - new features
- - they then merge into `develop` (merge develop into feature branch fist, test and then merge into develop)
- - `develop` is (automatically - see below) released on the **test site**.
- - `develop` is then merged into `production`
- - `production` is tagged
- - tags are released on the **live site**.
-
-Here are some options on how to achieve this
-
-
-
-# option 1 - use bitbucket _hook_ with this module. 
-use this module:
-
-### first
-set:
- - `SS_RELEASE_TOKEN=" ___ HELLO ___ OR SOMETHING LIKE THAT __"`
- - `SS_RELEASE_SCRIPT="run.sh"`
-
-in your `.env` file.
-
-### next
-
-create a release script in the root of your silverstripe project (e.g. `run.sh`)
-
-### finally
-
-add a hook to bitbucket https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=29083w490809suiaiofd78897 
-
-
-
-
-# option 2 - use BEAM
-
- - https://github.com/heyday/beam/
-
-
-
-
-
-# option 3 - use bitbucket pipepline
-
-##### a. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines / settings) 
-
-##### b. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
-
-##### c. add ssh key to server in ~/.ssh/authorized_keys. (CONTROL PANEL VERSION: add autorized key to control panel and add `bitbucket` user to server)
-
-##### d. write file below as `bitbucket-pipelines.yml`
-
-```shell
-pipelines:
-  branches:
-
-    development:
-      - step:
-          script:
-            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash vendor/bin/sake-release test'
-
-    master:
-      - step:
-          script:
-            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash vendor/bin/sake-release live'
-
-```
-
-##### f. add to your repo `npm-build-script.sh`
-
-
-### pipelines with extra stuff:
-
-https://github.com/brettt89/silverstripe-docker
-
-
-
-
-# Option 4: use sake-release from this module directly on the command line
-
-see details above.
-
-
+This module comes with an opiniated release script that can be used as follows:
 
 ### local
 ```shell
@@ -137,3 +48,93 @@ To also flush the front-end, set the following variable in your `.env` file:
 ```.env
 SS_RELEASE_FRONT_END=true
 ```
+
+
+## SPEED UP DEV/BUILD
+
+To speed up the dev/build, you can add the following to your `.env` file:
+
+```.env
+SS_FAST_DEV_BUILD=true
+```
+
+
+# Building a Deployment Strategy / Pipeline
+
+
+## requirements
+
+release should be easy ....
+
+ - Whenever you push to a designated branch, it releases on a server (test / production).
+ - We are able to roll back (db + code)
+ - Releases should be fast
+
+
+# option 1 - use bitbucket _hook_ with this module. 
+
+Here is how:
+
+### set up .env variables
+set:
+ - `SS_RELEASE_TOKEN="ABC_ABC_ABC_ABC_ABC_ABC_ABC_ABC_"` # set to a random string
+ - `SS_RELEASE_SCRIPT="vendor/bin/sake-release"`
+
+in your `.env` file.
+
+### finally
+
+add a hook to bitbucket: 
+
+`https://mysite.co.nz/_resources/vendor/sunnysideup/release/client/ReleaseProjectFromBitbucketHook.php?ts=ABC_ABC_ABC_ABC_ABC_ABC_ABC_ABC`
+
+
+See https://confluence.atlassian.com/bitbucketserver/using-repository-hooks-776639836.html
+
+
+
+# option 2 - use BEAM
+
+See https://github.com/heyday/beam/
+
+
+
+
+
+# option 3 - use bitbucket pipepline with this module
+
+##### a. enable pipelines: https://bitbucket.org/yourorganisation/yourproject/admin/addon/admin/pipelines/settings (see settings / pipelines / settings) 
+
+##### b. create ssh key on bitbucket.com (settings > pipelines > ssh keys)
+
+##### c. add public ssh key to server in ~/.ssh/authorized_keys (or through a control panel)
+
+##### d. write file below as `bitbucket-pipelines.yml` in the root of your project
+
+```shell
+pipelines:
+  branches:
+
+    development:
+      - step:
+          script:
+            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash vendor/bin/sake-release test'
+
+    master:
+      - step:
+          script:
+            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash vendor/bin/sake-release live'
+
+```
+
+### example pipelines with extra stuff:
+
+https://github.com/brettt89/silverstripe-docker
+
+
+
+
+# Option 4: use https://deployer.org/ 
+
+see details above.
+
