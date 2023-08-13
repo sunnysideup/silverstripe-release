@@ -29,7 +29,9 @@ display_help() {
 
 # Check if release is already running
 if [ -f "release-running" ]; then
-    echo "Going to sleep for 15 minutes as there is already a release running."
+    echo "Going to sleep for 15 minutes as there is already a release running.  "
+    echo "To start again, you can press CTRL+C and then delete the release-running file (rm release-running)"
+    echo "After that, you can start the release again."
     sleep 900
     echo "Waking up!"
 fi
