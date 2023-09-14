@@ -237,5 +237,4 @@ class ReleaseProjectFromBitbucketHook
             }
         }
     }
-
 }
