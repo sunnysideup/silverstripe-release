@@ -206,6 +206,20 @@ if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     fi
 fi
 
+# set CSP headers - if any
+if [ -d "./vendor/firesphere/cspheaders" ]; then
+    vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
+fi
+
+# delete cached files - we do this last. Not sure if this is right.
+if [[ -n "$TEMP_PATH" && -d "$TEMP_PATH" ]]; then
+    # Delete all files in TEMP_PATH
+    echo ""
+    echo "Deleting all files in TEMP_PATH: $TEMP_PATH"
+    echo ""
+    rm -rf "${TEMP_PATH:?}"/*
+fi
+
 echo ""
 echo "DONE"
 echo ""
