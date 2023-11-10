@@ -183,7 +183,6 @@ if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     # FIX FRONT-END
     ###############################
     if [ "$SS_RELEASE_FRONT_END" != "false" ] || [ "$SS_RELEASE_FRONT_END" != "false" ]; then
-
         if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
             sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
         elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
