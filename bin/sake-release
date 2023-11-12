@@ -7,11 +7,14 @@ display_help() {
     echo "Usage: vendor/bin/sake-release [environment type...] [branch...]" >&2
     echo
     echo "   -a                Create a backup"
+    echo "   -w                Run as www-data (or another user)"
+    echo "   -p                Set permissions (always set as www-data or another user set by -w)"
     echo "   -h                Display this help message and exit"
     echo
     echo "Example (run from project root directory on the live server):"
     echo
-    echo "   vendor/bin/sake-release -a live feature/awesome"
+    echo "   vendor/bin/sake-release -a live feature/awesome -w yes -p yes"
+    echo "   vendor/bin/sake-release -a live feature/awesome -w www-data -p yes"
     echo
     echo "This creates an sspak backup file of your project"
     echo " and releases the feature/awesome branch to a live environment"
@@ -29,10 +32,10 @@ display_help() {
 
 # Check if release is already running
 if [ -f "release-running" ]; then
-    echo "Going to sleep for 15 minutes as there is already a release running.  "
+    echo "Going to sleep for 5 minutes as there is already a release running.  "
     echo "To start again, you can press CTRL+C and then delete the release-running file (rm release-running)"
     echo "After that, you can start the release again."
-    sleep 900
+    sleep 300
     echo "Waking up!"
 fi
 
@@ -45,6 +48,8 @@ source ./.env
 
 # Process command line options.
 backup=false
+wwwDataUser=''
+setPermissions=false
 
 # do we need to do a backup
 while getopts ":ah" opt; do
@@ -52,6 +57,21 @@ while getopts ":ah" opt; do
     a)
         backup=true
         echo "Backup will be created"
+        ;;
+    w)
+        if id "$OPTARG" &>/dev/null; then
+            wwwDataUser=$OPTARG
+        else
+            wwwDataUser="www-data"
+        fi
+        echo "Run as $wwwDataUser"
+        ;;
+    p)
+        setPermissions=true
+        if [ -z "$wwwDataUser" ]; then
+            wwwDataUser="www-data"
+        fi
+        echo "set permissions as $wwwDataUser"
         ;;
     h)
         display_help
@@ -134,7 +154,6 @@ git pull origin $branch_name
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
     composer update --prefer-source
     composer vendor-expose
-    vendor/bin/sake dev/build flush=all
 elif [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
     echo "TEST environment"
 elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
@@ -146,17 +165,58 @@ else
     exit 1
 fi
 
-# Only run the following commands if the argument is not "dev"
+# run composer
 if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
 
     # composer update
     composer install --prefer-dist --no-dev
+else
+    composer install --prefer-source
+fi
 
-    # build
+# set permissions
+
+if [ "$setPermissions" == true ]; then
+
+    # remove obsolete folders
+    sudo rm .graphql/ -rf
+
+    # create necessary folders
+    sudo mkdir -p ./public
+    sudo mkdir -p ./public/assets
+    sudo mkdir -p ./.graphql-generated
+    sudo mkdir -p ./public/_graphql
+
+    # root folder is accessible
+    sudo chmod 0755 .
+    sudo chmod 0755 themes
+    sudo chmod 0755 public
+
+    # we keep all the sudos together...
+    # cleanup ownership
+    sudo chown $(whoami):$wwwDataUser . -R
+
+    sudo chown $wwwDataUser ./public/assets -R
+    sudo chown $wwwDataUser ./.graphql-generated/ -R
+    sudo chown $wwwDataUser ./public/_graphql -R
+    # files ...
+    if [ -f ./public/admin.types.graphql ]; then
+        sudo chown $wwwDataUser ./public/admin.types.graphql
+    fi
+
+fi
+
+# run /dev/build
+if [ -n "$wwwDataUser" ]; then
+    sudo -u $wwwDataUser vendor/bin/sake dev/build flush=all
+else
     vendor/bin/sake dev/build flush=all
+fi
 
-    # vendor expose double
-    composer vendor-expose
+# Only run the following commands if the argument is not "dev"
+
+if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
+    # build
 
     # record new version
     git describe --all --long >>release.log
