@@ -68,7 +68,7 @@ setPermissions=false
 composerUpdate=false
 
 # do we need to do a backup
-while getopts ":ah" opt; do
+while getopts ":awpuh" opt; do
     case ${opt} in
     a)
         backup=true
