@@ -7,6 +7,7 @@ display_help() {
     echo "Usage: vendor/bin/sake-release [environment type...] [branch...]" >&2
     echo
     echo "   -a                Create a backup, default is NO"
+    echo "   -e                Environment type, overrule type set in .env file."
     echo "   -w                Run as www-data (or another user), default is not to do this"
     echo "                     If set to yes, it will run as www-data, however you can also specify another user"
     echo "   -p                Set permissions (user set as www-data by default or another user set by -w)"
@@ -21,7 +22,7 @@ display_help() {
     echo "Other examples:"
 
     echo " # release the develop branch locally"
-    echo "   vendor/bin/sake-release dev      "
+    echo "   vendor/bin/sake-release dev -e dev     "
     echo ""
 
     echo " # release the develop branch on a test site"
@@ -67,11 +68,15 @@ wwwDataUser=''
 setPermissions=false
 composerUpdate=false
 
-while getopts ":aw:puh" opt; do
+while getopts ":ae:w:puh" opt; do
     case ${opt} in
     a)
         backup=true
         echo "Backup will be created"
+        ;;
+    e)
+        SS_ENVIRONMENT_TYPE=$OPTARG
+        echo "Enviroment set to $OPTARG"
         ;;
     w)
         if id "$OPTARG" &>/dev/null; then
