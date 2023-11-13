@@ -67,8 +67,7 @@ wwwDataUser=''
 setPermissions=false
 composerUpdate=false
 
-# do we need to do a backup
-while getopts ":awpuh" opt; do
+while getopts ":aw:puh" opt; do
     case ${opt} in
     a)
         backup=true
@@ -87,17 +86,17 @@ while getopts ":awpuh" opt; do
         if [ -z "$wwwDataUser" ]; then
             wwwDataUser="www-data"
         fi
-        echo "set permissions as $wwwDataUser"
+        echo "Set permissions as $wwwDataUser"
         ;;
     u)
         composerUpdate=true
-        echo "include composer update"
+        echo "Include composer update"
         ;;
     h)
         display_help
         ;;
     \?)
-        echo "Invalid Option. Option available is -a (archive / make backup): -$OPTARG" 1>&2
+        echo "Invalid Option: -$OPTARG" 1>&2
         exit 1
         ;;
     esac
