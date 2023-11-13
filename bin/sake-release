@@ -20,11 +20,11 @@ display_help() {
     echo
     echo "Other examples:"
 
-    echo " # release the development branch locally"
+    echo " # release the develop branch locally"
     echo "   vendor/bin/sake-release dev      "
     echo ""
 
-    echo " # release the development branch on a test site"
+    echo " # release the develop branch on a test site"
     echo "   vendor/bin/sake-release test"
     echo ""
 
