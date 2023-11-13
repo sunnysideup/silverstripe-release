@@ -169,9 +169,9 @@ fi
 if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
 
     # composer update
-    composer install --prefer-dist --no-dev
-else
     composer install --prefer-source
+else
+    composer install --prefer-dist --no-dev
 fi
 
 # set permissions
