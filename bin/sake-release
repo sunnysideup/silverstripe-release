@@ -33,7 +33,7 @@ display_help() {
     echo ""
 
     echo " # ON DEV: release the development branch, set permissions (www-data), run composer update"
-    echo "   vendor/bin/sake-release -p yes -u yes "
+    echo "   vendor/bin/sake-release -p -u "
     echo ""
 
     echo " # ON PROD: make a backup, release feature/awesome, run as www-data"
