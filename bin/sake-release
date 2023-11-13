@@ -20,16 +20,24 @@ display_help() {
     echo
     echo "Other examples:"
 
-    echo " # release the development branch"
+    echo " # release the development branch locally"
     echo "   vendor/bin/sake-release dev      "
+    echo ""
 
-    echo " # release the development branch"
+    echo " # release the development branch on a test site"
     echo "   vendor/bin/sake-release test"
+    echo ""
 
-    echo " # release the my-feature-branch branch"
+    echo " # release the my-feature-branch branch on a test site"
     echo "   vendor/bin/sake-release test my-feature-branch"
-    echo "   vendor/bin/sake-release -a live feature/awesome -w yes -p yes -u yes"
-    echo "   vendor/bin/sake-release -a live feature/awesome -w www-data -p yes -u yes"
+    echo ""
+
+    echo " # ON DEV: release the development branch, set permissions (www-data), run composer update"
+    echo "   vendor/bin/sake-release -p yes -u yes "
+    echo ""
+
+    echo " # ON PROD: make a backup, release feature/awesome, run as www-data"
+    echo "   vendor/bin/sake-release live feature/awesome -a  -w www-data"
 
     echo
     echo
