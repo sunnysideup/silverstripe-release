@@ -171,8 +171,7 @@ git pull origin $branch_name
 
 # Provide a flag: dev / test / live
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
-    composer update --prefer-source
-    composer vendor-expose
+    echo "DEV environment"
 elif [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
     echo "TEST environment"
 elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
