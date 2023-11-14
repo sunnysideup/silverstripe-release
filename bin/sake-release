@@ -62,6 +62,12 @@ fi
 touch release-running
 touch release.log
 
+echo ''
+echo '-----------------------------'
+echo '-----------------------------'
+echo '-----------------------------'
+echo ''
+
 # get data from .env
 source ./.env
 
@@ -169,6 +175,11 @@ else
     rm release-running -f
     exit 1
 fi
+echo ''
+echo '-----------------------------'
+echo '-----------------------------'
+echo '-----------------------------'
+echo ''
 
 # Optional backup
 if [[ $backup == true ]]; then
