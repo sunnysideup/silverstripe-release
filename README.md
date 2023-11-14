@@ -12,41 +12,17 @@ This module helps you release your silverstripe (or other) projects.
 
 This module comes with an opiniated release script that can be used as follows:
 
-### local
+### try it...
 ```shell
-# release `develop` branch locally
-vendor/bin/sake-release dev
-
-# release `features/test` branch locally
-vendor/bin/sake-release dev features/test 
+vendor/bin/sake-release -h
 ```
 
-### stage / test site
-```shell
-# release `develop` branch 
-vendor/bin/sake-release test
 
-# release `features/test` branch while making a backup first (-a)
-vendor/bin/sake-release -a test features/test
-```
-
-### live / production / prod site
-```shell
-# release `production` branch 
-vendor/bin/sake-release live
-
-# release `production` branch while making a backup first (-a)
-vendor/bin/sake-release -a live
-
-# release `features/test` branch while making a backup first (-a)
-vendor/bin/sake-release -a live features/test
-```
-
-## ALSO FLUSH FRONT-END
+## TURN OFF FLUSH FRONT-END
 To also flush the front-end, set the following variable in your `.env` file:
 
 ```.env
-SS_RELEASE_FRONT_END=true
+SS_RELEASE_FRONT_END=false
 ```
 
 
@@ -61,6 +37,7 @@ SS_FAST_DEV_BUILD=true
 
 # Building a Deployment Strategy / Pipeline
 
+Here are some general notes about releases. Use as you see fit. 
 
 ## requirements
 
@@ -118,12 +95,12 @@ pipelines:
     development:
       - step:
           script:
-            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash vendor/bin/sake-release test'
+            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./var/www/mysite; bash vendor/bin/sake-release test'
 
     master:
       - step:
           script:
-            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./container/application; bash vendor/bin/sake-release live'
+            - ssh -o StrictHostKeyChecking=no bitbucket@111.222.333.444 'cd ./var/www/mysite; bash vendor/bin/sake-release live'
 
 ```
 
