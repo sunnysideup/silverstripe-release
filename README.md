@@ -18,7 +18,7 @@ vendor/bin/sake-release -h
 ```
 
 
-## TURN OFF FLUSH FRONT-END
+## Additional settings
 To also flush the front-end, set the following variable in your `.env` file:
 
 ```.env
