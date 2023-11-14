@@ -43,6 +43,12 @@ display_help() {
     exit 1
 }
 
+# Function to display a warning
+warn_unexpected_value() {
+    echo "Warning: The flag $1 does not require a value. Ignoring provided value '$2'."
+    exit 1
+}
+
 # Check if release is already running
 if [ -f "release-running" ]; then
     echo "Going to sleep for 5 minutes as there is already a release running.  "
@@ -59,56 +65,80 @@ touch release.log
 # get data from .env
 source ./.env
 
-# Process command line options.
+# Initialize variables
+branch_name=""
+wwwDataUser=""
 backup=false
-wwwDataUser=''
 setPermissions=false
 composerUpdate=false
+otherOptions=()
 
-# get flags
-while getopts ":ae:w:puh" opt; do
-    case ${opt} in
-    a)
-        backup=true
-        echo "Backup will be created"
-        ;;
-    e)
-        SS_ENVIRONMENT_TYPE=$OPTARG
-        echo "Enviroment set to $OPTARG"
-        ;;
-    w)
-        if id "$OPTARG" &>/dev/null; then
-            wwwDataUser=$OPTARG
+# Loop through all arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    -w)
+        wwwDataUser="$2"
+        if id "$2" &>/dev/null; then
+            wwwDataUser=$2
         else
             wwwDataUser="www-data"
         fi
+        shift # Remove argument name
+        shift # Remove argument value
         echo "Run as $wwwDataUser"
         ;;
-    p)
+    -e)
+        SS_ENVIRONMENT_TYPE="$2"
+        shift # Remove argument name
+        shift # Remove argument value
+        echo "Environment Type set to: $SS_ENVIRONMENT_TYPE"
+        ;;
+    -a)
+        if [[ -n $2 && ${2:0:1} != "-" ]]; then
+            warn_unexpected_value "-a" "$2"
+            shift # Remove unexpected value
+        fi
+        backup=true
+        shift # Remove argument name
+        echo "Make a backup first"
+        ;;
+    -p)
+        if [[ -n $2 && ${2:0:1} != "-" ]]; then
+            warn_unexpected_value "-p" "$2"
+            shift # Remove unexpected value
+        fi
         setPermissions=true
         if [ -z "$wwwDataUser" ]; then
             wwwDataUser="www-data"
         fi
-        echo "Set permissions as $wwwDataUser"
+        shift # Remove argument name
         ;;
-    u)
+    -u)
+        if [[ -n $2 && ${2:0:1} != "-" ]]; then
+            warn_unexpected_value "-u" "$2"
+            shift # Remove unexpected value
+        fi
         composerUpdate=true
-        echo "Include composer update"
+        shift # Remove argument name
         ;;
-    h)
+    -h)
         display_help
         ;;
-    \?)
-        echo "Invalid Option: -$OPTARG" 1>&2
-        exit 1
+    *)                       # Handle positional arguments
+        otherOptions+=("$1") # Save positional arg
+        shift                # Remove argument
         ;;
     esac
 done
-shift $((OPTIND - 1))
+
+# Now, process the positional arguments
+# Assuming the first positional argument is the branch name
+if [ ${#otherOptions[@]} -gt 0 ]; then
+    branch_name=${otherOptions[0]}
+fi
 
 # Determine git branch based on environment if not provided
-branch_name=$1
-if [ -z "$1" ]; then
+if [ -z "$branch_name" ]; then
     if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
         branch_name="production"
     elif [ "$SS_ENVIRONMENT_TYPE" == "dev" ] || [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
