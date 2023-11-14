@@ -19,7 +19,7 @@ vendor/bin/sake-release -h
 
 
 ## Additional settings
-To also flush the front-end, set the following variable in your `.env` file:
+To skip flushing the front-end, set the following variable in your `.env` file:
 
 ```.env
 SS_RELEASE_FRONT_END=false
