@@ -113,5 +113,5 @@ https://github.com/brettt89/silverstripe-docker
 
 # Option 4: use https://deployer.org/ 
 
-see details above.
+
 
