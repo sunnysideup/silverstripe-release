@@ -143,6 +143,17 @@ if [ ${#otherOptions[@]} -gt 0 ]; then
     branch_name=${otherOptions[0]}
 fi
 
+if [ "$branch_name" == "live" ]; then
+    branch_name="production"
+    SS_ENVIRONMENT_TYPE="live"
+elif [ "$branch_name" == "test" ]; then
+    branch_name="develop"
+    SS_ENVIRONMENT_TYPE="test"
+elif [ "$branch_name" == "dev" ]; then
+    branch_name="develop"
+    SS_ENVIRONMENT_TYPE="dev"
+fi
+
 # Determine git branch based on environment if not provided
 if [ -z "$branch_name" ]; then
     if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
