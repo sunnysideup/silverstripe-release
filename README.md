@@ -14,7 +14,7 @@ This module comes with an opiniated release script that can be used as follows:
 vendor/bin/sake-release -h
 ```
 
-### Additional settings
+### additional settings
 
 To skip flushing the front-end, set the following variable in your `.env` file:
 
