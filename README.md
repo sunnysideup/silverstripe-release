@@ -14,7 +14,7 @@ This module comes with an opiniated release script that can be used as follows:
 vendor/bin/sake-release -h
 ```
 
-## Additional settings
+##3 Additional settings
 
 To skip flushing the front-end, set the following variable in your `.env` file:
 
@@ -22,7 +22,7 @@ To skip flushing the front-end, set the following variable in your `.env` file:
 SS_RELEASE_FRONT_END=false
 ```
 
-## SPEED UP DEV/BUILD
+### speed up DEV/BUILD
 
 To speed up the dev/build, you can add the following to your `.env` file:
 
