@@ -30,6 +30,14 @@ To speed up the dev/build, you can add the following to your `.env` file:
 SS_FAST_DEV_BUILD=true
 ```
 
+---
+---
+---
+Below are some further notes about release strategies
+---
+---
+---
+
 # Building a Deployment Strategy / Pipeline
 
 Here are some general notes about releases. Use as you see fit.
