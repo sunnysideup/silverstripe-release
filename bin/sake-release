@@ -241,7 +241,19 @@ fi
 echo "=========================" >>release.log
 echo "Time: $(date). START UPDATE: " >>release.log
 echo "=========================" >>release.log
-date >>release.log
+
+# Log the branch name
+echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >>release.log
+
+# Log the latest commit hash and message
+echo "Commit: $(git log -1 --format='%H')" >>release.log
+echo "Message: $(git log -1 --format='%s')" >>release.log
+
+# Log the author and date of the latest commit
+echo "Author: $(git log -1 --format='%an')" >>release.log
+echo "Date: $(git log -1 --format='%ad')" >>release.log
+
+# Also log the output of git describe for additional info
 git describe --all --long >>release.log
 
 # get git
@@ -367,6 +379,24 @@ if [[ -n "$TEMP_PATH" && -d "$TEMP_PATH" ]]; then
     echo ""
     rm -rf "${TEMP_PATH:?}"/*
 fi
+
+echo "=========================" >>release.log
+echo "Time: $(date). END UPDATE: " >>release.log
+echo "=========================" >>release.log
+
+# Log the branch name
+echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >>release.log
+
+# Log the latest commit hash and message
+echo "Commit: $(git log -1 --format='%H')" >>release.log
+echo "Message: $(git log -1 --format='%s')" >>release.log
+
+# Log the author and date of the latest commit
+echo "Author: $(git log -1 --format='%an')" >>release.log
+echo "Date: $(git log -1 --format='%ad')" >>release.log
+
+# Also log the output of git describe for additional info
+git describe --all --long >>release.log
 
 echo ""
 echo "DONE"
