@@ -21,11 +21,6 @@ EOF
     exit 1
 }
 
-# Warning for unexpected values
-warn_unexpected_value() {
-    echo "Warning: Flag $1 does not require value. Ignoring '$2'."
-    exit 1
-}
 
 # If release is running, wait
 if [ -f "release-running" ]; then
