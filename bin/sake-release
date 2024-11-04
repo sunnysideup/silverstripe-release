@@ -1,355 +1,178 @@
 #!/bin/bash
 
-# Function to display help message
+# Display help
 display_help() {
-    rm release-running -f
-    echo
-    echo "Usage: vendor/bin/sake-release [branch...]" >&2
-    echo
-    echo "   -a                Create a backup, default is NO"
-    echo "   -e                Environment type, overrule type set in .env file."
-    echo "   -w                Run as www-data (or another user), default is not to do this"
-    echo "                     If set to yes, it will run as www-data, however you can also specify another user"
-    echo "   -p                Set permissions (user set as www-data by default or another user set by -w)"
-    echo "   -u                Run composer update rather than composer install"
-    echo "   -d                For composer, do not use --no-dev, i.e. include dev packages"
-    echo "   -h                Display this help message and exit"
-    echo
-    echo "Example (run from project root directory on the live server)"
-    echo "It will make a backup and then release the latest version of the production branch"
-    echo
-    echo "   vendor/bin/sake-release -a"
-    echo
-    echo
-    echo "Other examples:"
-
-    echo " # release the develop branch locally"
-    echo " # (-e dev is optional, it will check SS_ENVIRONMENT_TYPE in .env))"
-    echo "   vendor/bin/sake-release develop -e dev     "
-    echo ""
-
-    echo " # release the my-feature-branch branch"
-    echo "   vendor/bin/sake-release my-feature-branch"
-    echo ""
-
-    echo " # release the development branch, set permissions (www-data), run composer update"
-    echo "   vendor/bin/sake-release -p -u"
-    echo ""
-
-    echo " # make a backup, release feature/awesome, run as www-data"
-    echo "   vendor/bin/sake-release live feature/awesome -a -w www-data"
-
-    echo
-    echo
+    cat <<EOF
+Usage: vendor/bin/sake-release [branch...]
+   -a    Backup (default: NO)
+   -o    Backup only (default: NO)
+   -e    Override environment type set in .env
+   -w    Run as specified user (default: no)
+   -p    Set permissions (user default: www-data)
+   -u    Composer update instead of install
+   -d    Include dev packages
+   -h    Show this help
+Examples:
+   vendor/bin/sake-release -a  # Backup & release production
+   vendor/bin/sake-release develop -e dev  # Local release of 'develop' branch
+   vendor/bin/sake-release -p -u  # Release, set permissions, update composer
+   vendor/bin/sake-release live feature/awesome -a -w www-data  # Run as www-data
+EOF
     exit 1
 }
 
-# Function to display a warning
+# Warning for unexpected values
 warn_unexpected_value() {
-    echo "Warning: The flag $1 does not require a value. Ignoring provided value '$2'."
+    echo "Warning: Flag $1 does not require value. Ignoring '$2'."
     exit 1
 }
 
-# Check if release is already running
+# If release is running, wait
 if [ -f "release-running" ]; then
-    echo "Going to sleep for 5 minutes as there is already a release running.  "
-    echo "To start again, you can press CTRL+C and then delete the release-running file (rm release-running)"
-    echo "After that, you can start the release again."
+    echo "Release in progress, sleeping 5 minutes (CTRL+C to interrupt)"
     sleep 300
-    echo "Waking up!"
+    echo "Resuming"
 fi
 
-# Set to running
-touch release-running
-touch release.log
+# Start release
+touch release-running release.log
 
-echo ''
-echo '-----------------------------'
-echo '-----------------------------'
-echo '-----------------------------'
-echo ''
+source ./.env # Load environment variables
 
-# get data from .env
-source ./.env
-
-# Initialize variables
+# Default variables
 branch_name=""
-wwwDataUser=""
 backup=false
+backupOnly=false
 setPermissions=false
 composerUpdate=false
 includeDevPackages=false
 otherOptions=()
 
-# Loop through all arguments
+# Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
     -w)
-        wwwDataUser="$2"
-        if id "$2" &>/dev/null; then
-            wwwDataUser=$2
-        else
-            wwwDataUser="www-data"
-        fi
-        shift # Remove argument name
-        shift # Remove argument value
-        echo "Run as $wwwDataUser"
+        wwwDataUser=${2:-"www-data"}
+        shift 2
         ;;
     -e)
         SS_ENVIRONMENT_TYPE="$2"
-        shift # Remove argument name
-        shift # Remove argument value
-        echo "Environment Type set to: $SS_ENVIRONMENT_TYPE"
+        shift 2
         ;;
     -a)
-        if [[ -n $2 && ${2:0:1} != "-" ]]; then
-            warn_unexpected_value "-a" "$2"
-            shift # Remove unexpected value
-        fi
         backup=true
-        shift # Remove argument name
-        echo "Make a backup first"
+        shift
+        ;;
+    -o)
+        backup=true
+        backupOnly=true
+        shift
         ;;
     -p)
-        if [[ -n $2 && ${2:0:1} != "-" ]]; then
-            warn_unexpected_value "-p" "$2"
-            shift # Remove unexpected value
-        fi
         setPermissions=true
-        if [ -z "$wwwDataUser" ]; then
-            wwwDataUser="www-data"
-        fi
-        shift # Remove argument name
+        wwwDataUser=${wwwDataUser:-"www-data"}
+        shift
         ;;
     -d)
-        if [[ -n $2 && ${2:0:1} != "-" ]]; then
-            warn_unexpected_value "-p" "$2"
-            shift # Remove unexpected value
-        fi
         includeDevPackages=true
-        shift # Remove argument name
+        shift
         ;;
     -u)
-        if [[ -n $2 && ${2:0:1} != "-" ]]; then
-            warn_unexpected_value "-u" "$2"
-            shift # Remove unexpected value
-        fi
         composerUpdate=true
-        shift # Remove argument name
+        shift
         ;;
-    -h)
-        display_help
-        ;;
-    *)                       # Handle positional arguments
-        otherOptions+=("$1") # Save positional arg
-        shift                # Remove argument
+    -h) display_help ;;
+    *)
+        otherOptions+=("$1")
+        shift
         ;;
     esac
 done
 
-# Now, process the positional arguments
-# Assuming the first positional argument is the branch name
-if [ ${#otherOptions[@]} -gt 0 ]; then
-    branch_name=${otherOptions[0]}
-fi
+branch_name=${otherOptions[0]:-${SS_RELEASE_BRANCH:-$SS_ENVIRONMENT_TYPE}}
 
-if [ "$branch_name" == "live" ]; then
+# Set default branches based on alias
+# staging is included to show it is part of the deal.
+case "$branch_name" in
+live)
     branch_name="production"
     SS_ENVIRONMENT_TYPE="live"
-elif [ "$branch_name" == "test" ]; then
-    branch_name="test"
-    SS_ENVIRONMENT_TYPE="test"
-elif [ "$branch_name" == "staging" ]; then
+    ;;
+staging)
     branch_name="staging"
     SS_ENVIRONMENT_TYPE="test"
-elif [ "$branch_name" == "dev" ]; then
+    ;;
+test)
+    branch_name="test"
+    SS_ENVIRONMENT_TYPE="test"
+    ;;
+dev)
     branch_name="develop"
-    SS_ENVIRONMENT_TYPE="dev"
+    SS_ENVIRONMENT_TYPE="test" # this is the develop on the server - so we set it to test!
+    ;;
+local)
+    branch_name="develop"
+    SS_ENVIRONMENT_TYPE="dev" # this is the develop on the server - so we set it to test!
+    ;;
+esac
+
+# Ensure branch exists
+if ! git show-ref --verify --quiet refs/heads/$branch_name; then
+    echo "Branch '$branch_name' not found. Fetching..."
+    git fetch --all || exit 1
 fi
 
-# Determine git branch based on environment if not provided
-if [ -z "$branch_name" ]; then
-    if [ -z "$RELEASE_BRANCH" ]; then
-        if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-            branch_name="production"
-        elif [ "$SS_ENVIRONMENT_TYPE" == "dev" ] || [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-            branch_name="develop"
-        fi
-    else
-        branch_name="$RELEASE_BRANCH"
-    fi
-fi
-
-# check if branch exists
-if git show-ref --verify --quiet refs/heads/$branch_name; then
-    echo "Branch '$branch_name' exists."
-else
-    echo "Branch '$branch_name' does not exist."
-    git fetch --all
-    exit 1
-fi
-
-# Test env type: dev / test / live
-if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
-    echo "DEV environment"
-elif [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-    echo "TEST environment"
-elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-    echo "LIVE environment"
-else
-    echo "Invalid argument. "
-    echo "... Please specify 'dev', 'test',  or 'live' using the -e flag "
-    echo "... or make sure it is set in the env file (SS_ENVIRONMENT_TYPE)"
-    rm release-running -f
-    exit 1
-fi
-echo ''
-echo '-----------------------------'
-echo '-----------------------------'
-echo '-----------------------------'
-echo ''
+echo "${SS_ENVIRONMENT_TYPE^^} environment"
 
 # Optional backup
-if [[ $backup == true ]]; then
-
-    # create backup dir with _manifest_exclude
-    mkdir -p ./__backups
-    cd ./__backups
-    touch _manifest_exclude
-
-    # remove any files left from last time
-    rm ssbak -f
-    rm ssbak_linux_amd64.tar.gz -f
-    rm LICENSE -f
-    rm README.md -f
-    rm ./backup.sspak -f
-
-    # download latest
+if $backup; then
+    mkdir -p ./__backups && cd ./__backups
     wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
-
-    # install
-    tar zxvf ssbak_linux_amd64.tar.gz
-    chmod +x ./ssbak
-
-    # backup
+    tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
     ./ssbak save .. ./backup.sspak
-
-    # cleanup
-    rm ssbak -f
-    rm ssbak_linux_amd64.tar.gz -f
-    rm LICENSE -f
-    rm README.md -f
-
-    # go back to previous dir
+    rm -f ssbak ssbak_linux_amd64.tar.gz LICENSE README.md
     cd ../
+    if $backupOnly; then
+        echo "Backup complete, please check ./__backups/backup.sspak"
+        exit 0
+    fi
 fi
 
-# note release data in release.log
-echo "=========================" >>release.log
-echo "Time: $(date). START UPDATE: " >>release.log
-echo "=========================" >>release.log
+# Logging release
+{
+    echo "========================="
+    echo "Time: $(date). START UPDATE:"
+    echo "Branch: $(git rev-parse --abbrev-ref HEAD)"
+    git log -1 --format="Commit: %H%nMessage: %s%nAuthor: %an%nDate: %ad"
+    git describe --all --long
+} >>release.log
 
-# Log the branch name
-echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >>release.log
+# Git and Composer operations
+git checkout "$branch_name" && git pull origin "$branch_name"
 
-# Log the latest commit hash and message
-echo "Commit: $(git log -1 --format='%H')" >>release.log
-echo "Message: $(git log -1 --format='%s')" >>release.log
-
-# Log the author and date of the latest commit
-echo "Author: $(git log -1 --format='%an')" >>release.log
-echo "Date: $(git log -1 --format='%ad')" >>release.log
-
-# Also log the output of git describe for additional info
-git describe --all --long >>release.log
-
-# get git
-git checkout $branch_name
-# Git actions with chosen branch
-git pull origin $branch_name
-
-# run composer
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
-    if [ "$composerUpdate" == true ]; then
-        composer update --prefer-source
-    else
-        composer install --prefer-source
-    fi
+    composer ${composerUpdate:+update} --prefer-source
 else
-    if [ "$includeDevPackages" == true ]; then
-        composer install --prefer-dist
-    else
-        composer install --prefer-dist --no-dev
-    fi
+    composer install --prefer-dist ${includeDevPackages:+} --no-dev
 fi
 
-# set permissions
-if [ "$setPermissions" == true ]; then
-
-    # remove obsolete folders
-    sudo rm .graphql/ -rf
-
-    # create necessary folders
-    sudo mkdir -p ./public
-    sudo mkdir -p ./public/assets
-    sudo mkdir -p ./.graphql-generated
-    sudo mkdir -p ./public/_graphql
-
-    # root folder is accessible
-    sudo chmod 0755 .
-    sudo chmod 0755 themes
-    sudo chmod 0755 public
-
-    # we keep all the sudos together...
-    # cleanup ownership
-    sudo chown $(whoami):$wwwDataUser . -R
-
-    sudo chown $wwwDataUser ./public/assets -R
-    sudo chown $wwwDataUser ./.graphql-generated -R
-    sudo chown $wwwDataUser ./public/_graphql -R
-    # files ...
-    if [ -f ./public/admin.types.graphql ]; then
-        sudo chown $wwwDataUser ./public/admin.types.graphql
-    fi
-
+# Set permissions if needed
+if $setPermissions; then
+    sudo mkdir -p public/assets .graphql-generated public/_graphql
+    sudo chown -R "$(whoami):$wwwDataUser" .
+    sudo chown -R $wwwDataUser public/assets .graphql-generated public/_graphql
+    [ -f public/admin.types.graphql ] && sudo chown $wwwDataUser public/admin.types.graphql
 fi
 
-# run /dev/build
+# Run SilverStripe dev/build
 if [ -n "$wwwDataUser" ]; then
-    sudo -u $wwwDataUser vendor/bin/sake dev/build flush=all
+    sudo -u "$wwwDataUser" vendor/bin/sake dev/build flush=all
 else
     vendor/bin/sake dev/build flush=all
 fi
 
-# Only run the following commands if the argument is not "dev"
-
 if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     # build
-
-    # record new version
-    git describe --all --long >>release.log
-
-    echo "=========================" >>release.log
-    echo "BRANCH: $branch_name" >>release.log
-    echo "=========================" >>release.log
-    echo "DONE" >>release.log
-    echo "=========================" >>release.log
-    echo "" >>release.log
-    echo "" >>release.log
-
-    ##########################################
-    # Ping Release if FIA_RELEASE_PING_URL is set
-    ##########################################
-
-    if [ -n "$FIA_RELEASE_PING_URL" ]; then
-        GIT_HASH=$(git rev-parse HEAD)
-        URL_WITH_HASH="${FIA_RELEASE_PING_URL}${GIT_HASH}"
-        wget -S -qO- "${URL_WITH_HASH}"
-    fi
-
-    ###############################
-    # FIX FRONT-END
-    ###############################
     if [ "$SS_RELEASE_FRONT_END" != "false" ] || [ "$SS_RELEASE_FRONT_END" != "false" ]; then
         if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
             sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
@@ -373,40 +196,15 @@ if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     fi
 fi
 
-# set CSP headers - if any
+# Ping release URL if set
+[ -n "$FIA_RELEASE_PING_URL" ] && wget -S -qO- "${FIA_RELEASE_PING_URL}$(git rev-parse HEAD)"
+
+# Finalize release
 if [ -d "./vendor/firesphere/cspheaders" ]; then
     vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
 fi
 
-# delete cached files - we do this last. Not sure if this is right.
-if [[ -n "$TEMP_PATH" && -d "$TEMP_PATH" ]]; then
-    # Delete all files in TEMP_PATH
-    echo ""
-    echo "Deleting all files in TEMP_PATH: $TEMP_PATH"
-    echo ""
-    rm -rf "${TEMP_PATH:?}"/*
-fi
+[ -d "$TEMP_PATH" ] && rm -rf "${TEMP_PATH:?}/*"
 
-echo "=========================" >>release.log
-echo "Time: $(date). END UPDATE: " >>release.log
-echo "=========================" >>release.log
-
-# Log the branch name
-echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >>release.log
-
-# Log the latest commit hash and message
-echo "Commit: $(git log -1 --format='%H')" >>release.log
-echo "Message: $(git log -1 --format='%s')" >>release.log
-
-# Log the author and date of the latest commit
-echo "Author: $(git log -1 --format='%an')" >>release.log
-echo "Date: $(git log -1 --format='%ad')" >>release.log
-
-# Also log the output of git describe for additional info
-git describe --all --long >>release.log
-
-echo ""
-echo "DONE"
-echo ""
-
-rm release-running -f
+echo "DONE" >>release.log
+rm -f release-running
