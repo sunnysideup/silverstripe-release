@@ -27,16 +27,6 @@ warn_unexpected_value() {
     exit 1
 }
 
-# If release is running, wait
-if [ -f "release-running" ]; then
-    echo "Release in progress, sleeping 5 minutes (CTRL+C to interrupt)"
-    sleep 300
-    echo "Resuming"
-fi
-
-# Start release
-touch release-running release.log
-
 source ./.env # Load environment variables
 
 # Default variables
@@ -90,6 +80,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# If release is running, wait
+if [ -f "release-running" ]; then
+    echo "Release in progress, sleeping 5 minutes (CTRL+C to interrupt)"
+    sleep 300
+    echo "Resuming"
+fi
+
+# Start release
+touch release-running release.log
+
 branch_name=${otherOptions[0]:-${SS_RELEASE_BRANCH:-$SS_ENVIRONMENT_TYPE}}
 
 # Set default branches based on alias
@@ -121,6 +121,9 @@ esac
 if ! git show-ref --verify --quiet refs/heads/$branch_name; then
     echo "Branch '$branch_name' not found. Fetching..."
     git fetch --all || exit 1
+else # Ensure branch is up-to-date
+    echo "Fetching latest changes for '$branch_name'..."
+    git fetch origin $branch_name
 fi
 
 echo "${SS_ENVIRONMENT_TYPE^^} environment"
