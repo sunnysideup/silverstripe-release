@@ -4,19 +4,36 @@
 display_help() {
     cat <<EOF
 Usage: vendor/bin/sake-release [branch...]
-   -a    Backup (default: NO)
-   -o    Backup only (default: NO)
+Runs a git pull, composer update, dev/build and optionally backups the site.
+If installed, it will also run vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
+If the environment is not 'dev', it will also flush the front-end (apache cache).
+It uses the following .env variables:
+    SS_ENVIRONMENT_TYPE
+    SS_RELEASE_BRANCH (optional)
+    SS_RELEASE_FRONT_END (set to false to skip front-end flush)
+    FIA_RELEASE_PING_URL (url to ping after release)
+    TEMP_PATH (optional, to clean up)
+    SS_BASE_URL (for front-end flush)
+
+Options:
+   -a    Backup (default: no)
+   -o    Backup only (default: no)
    -e    Override environment type set in .env
-   -w    Run as specified user (default: no)
+   -w    Run as specified user (default: no, set to a user like www-data)
    -p    Set permissions (user default: www-data)
    -u    Composer update instead of install
    -d    Include dev packages
    -h    Show this help
+
 Examples:
-   vendor/bin/sake-release -a  # Backup & release production
-   vendor/bin/sake-release develop -e dev  # Local release of 'develop' branch
-   vendor/bin/sake-release -p -u  # Release, set permissions, update composer
-   vendor/bin/sake-release live feature/awesome -a -w www-data  # Run as www-data
+   # Backup & release
+   vendor/bin/sake-release -a
+
+   # release of 'develop' branch
+   vendor/bin/sake-release develop
+
+   # Release, set permissions, update composer
+   vendor/bin/sake-release -p -u
 EOF
     exit 1
 }
