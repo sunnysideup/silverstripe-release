@@ -157,7 +157,10 @@ if [ "$branch_name" == "live" ]; then
     branch_name="production"
     SS_ENVIRONMENT_TYPE="live"
 elif [ "$branch_name" == "test" ]; then
-    branch_name="develop"
+    branch_name="test"
+    SS_ENVIRONMENT_TYPE="test"
+elif [ "$branch_name" == "staging" ]; then
+    branch_name="staging"
     SS_ENVIRONMENT_TYPE="test"
 elif [ "$branch_name" == "dev" ]; then
     branch_name="develop"
@@ -166,10 +169,14 @@ fi
 
 # Determine git branch based on environment if not provided
 if [ -z "$branch_name" ]; then
-    if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-        branch_name="production"
-    elif [ "$SS_ENVIRONMENT_TYPE" == "dev" ] || [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-        branch_name="develop"
+    if [ -z "$RELEASE_BRANCH" ]; then
+        if [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
+            branch_name="production"
+        elif [ "$SS_ENVIRONMENT_TYPE" == "dev" ] || [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
+            branch_name="develop"
+        fi
+    else
+        branch_name="$RELEASE_BRANCH"
     fi
 fi
 
