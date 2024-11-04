@@ -47,6 +47,7 @@ setPermissions=false
 composerUpdate=false
 includeDevPackages=false
 otherOptions=()
+wwwDataUser=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -173,18 +174,24 @@ fi
 
 if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
     # build
-    if [ "$SS_RELEASE_FRONT_END" != "false" ] || [ "$SS_RELEASE_FRONT_END" != "false" ]; then
+    if [ "$SS_RELEASE_FRONT_END" != "false" ]; then
+        FILE_PATH="./.env"
+        BASE_URL=$(grep -oP 'SS_BASE_URL="\K[^"]+' $FILE_PATH)
+        # Check if BASE_URL was successfully set
+        if [ -z "$BASE_URL" ]; then
+            echo "Error: SS_BASE_URL is not set in $FILE_PATH. Exiting."
+            exit 1
+        fi
+        # Remove any trailing slash
+        BASE_URL="${BASE_URL%/}"
+        NEW_URL="${BASE_URL}/dev/?flush=all"
+
         if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
             sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
         elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
             sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
         fi
 
-        FILE_PATH="./.env"
-        BASE_URL=$(grep -oP 'SS_BASE_URL="\K[^"]+' $FILE_PATH)
-        # Remove any trailing slash
-        BASE_URL="${BASE_URL%/}"
-        NEW_URL="${BASE_URL}/dev/?flush=all"
         wget -O - $NEW_URL
 
         # Switch SS_ENVIRONMENT_TYPE back to its original value
