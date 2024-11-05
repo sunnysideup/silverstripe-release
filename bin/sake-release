@@ -133,17 +133,6 @@ local)
     ;;
 esac
 
-# Ensure branch exists
-if ! git show-ref --verify --quiet refs/heads/$branch_name; then
-    echo "Branch '$branch_name' not found. Fetching..."
-    git fetch --all || exit 1
-else # Ensure branch is up-to-date
-    echo "Fetching latest changes for '$branch_name'..."
-    git fetch origin $branch_name
-fi
-
-echo "${SS_ENVIRONMENT_TYPE^^} environment"
-
 # Optional backup
 if $backup; then
     mkdir -p ./__backups && cd ./__backups
@@ -157,6 +146,17 @@ if $backup; then
         exit 0
     fi
 fi
+
+# Ensure branch exists
+if ! git show-ref --verify --quiet refs/heads/$branch_name; then
+    echo "Branch '$branch_name' not found. Fetching..."
+    git fetch --all || exit 1
+else # Ensure branch is up-to-date
+    echo "Fetching latest changes for '$branch_name'..."
+    git fetch origin $branch_name
+fi
+
+echo "${SS_ENVIRONMENT_TYPE^^} environment"
 
 # Logging release
 {
