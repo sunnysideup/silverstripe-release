@@ -42,6 +42,17 @@ EOF
     exit 1
 }
 
+recordcommit() {
+    {
+        echo "========================="
+        echo $1
+        echo "========================="
+        echo "Time: $(date). START UPDATE:"
+        echo "Branch: $(git rev-parse --abbrev-ref HEAD)"
+        git log -1 --format="Commit: %H%nMessage: %s%nAuthor: %an%nDate: %ad"
+        git describe --all --long
+    } >>release.log
+}
 
 source ./.env # Load environment variables
 
@@ -120,7 +131,7 @@ staging)
     SS_ENVIRONMENT_TYPE="test"
     ;;
 test)
-    branch_name="test"
+    branch_name="develop"
     SS_ENVIRONMENT_TYPE="test"
     ;;
 dev)
@@ -132,6 +143,8 @@ local)
     SS_ENVIRONMENT_TYPE="dev" # this is the develop on the server - so we set it to test!
     ;;
 esac
+
+recordcommit "Starting release of $branch_name"
 
 # Optional backup
 if $backup; then
@@ -157,15 +170,6 @@ else # Ensure branch is up-to-date
 fi
 
 echo "${SS_ENVIRONMENT_TYPE^^} environment"
-
-# Logging release
-{
-    echo "========================="
-    echo "Time: $(date). START UPDATE:"
-    echo "Branch: $(git rev-parse --abbrev-ref HEAD)"
-    git log -1 --format="Commit: %H%nMessage: %s%nAuthor: %an%nDate: %ad"
-    git describe --all --long
-} >>release.log
 
 # Git and Composer operations
 git checkout "$branch_name" && git pull origin "$branch_name"
@@ -232,5 +236,6 @@ fi
 
 [ -d "$TEMP_PATH" ] && rm -rf "${TEMP_PATH:?}/*"
 
-echo "DONE" >>release.log
+recordcommit "Finished release of $branch_name"
+
 rm -f release-running
