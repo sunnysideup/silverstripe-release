@@ -131,7 +131,7 @@ staging)
     SS_ENVIRONMENT_TYPE="test"
     ;;
 test)
-    branch_name="develop"
+    branch_name="test"
     SS_ENVIRONMENT_TYPE="test"
     ;;
 dev)
