@@ -9,7 +9,13 @@ class AddToGitIgnore implements Flushable
 {
     public static function flush()
     {
+        if (Director::isDev()) {
+            self::addToGitIgnore();
+        }
+    }
 
+    protected static function addToGitIgnore()
+    {
         $filePath = Director::baseFolder().'/'.'.gitignore';
         $linesToAdd = ['release.log', 'release_running'];
 
