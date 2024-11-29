@@ -3,7 +3,7 @@
 $obj = new ReleaseProjectFromBitbucketHook();
 $obj->run();
 
-class ReleaseProjectFromBitbucketHook
+class Add
 {
     /**
      * The directory where the .env file can be located.
