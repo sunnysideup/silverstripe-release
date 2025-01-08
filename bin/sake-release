@@ -13,16 +13,19 @@ What it does:
 
 .env variables used:
     SS_ENVIRONMENT_TYPE
-    SS_RELEASE_BRANCH (optional)
     SS_RELEASE_FRONT_END (set to false to skip front-end flush)
-    FIA_RELEASE_PING_URL (url to ping after release)
-    TEMP_PATH (optional, to clean up)
     SS_BASE_URL (for front-end flush)
+
+    FIA_RELEASE_PING_URL (optional, url to ping after release)
+    SS_RELEASE_BRANCH (optional)
+    TEMP_PATH (optional, to clean up)
+    SS_IMPORT_SSPAK_EVERY_TIME (optional, set to a file name to import sspak every time)
 
 Options:
    -a    Backup (default: no)
    -o    Backup only (default: no)
    -e    Override environment type set in .env
+   -i    Import an sspak file (default: no import)
    -w    Run as specified user (default: no, set to a user like www-data)
    -p    Set permissions (user default: www-data)
    -u    Composer update instead of install
@@ -38,6 +41,9 @@ Examples:
 
    # Release, set permissions, update composer
    vendor/bin/sake-release -p -u
+
+   # Release, with new data
+   vendor/bin/sake-release -i new-data.sspak
 EOF
     exit 1
 }
@@ -65,7 +71,11 @@ composerUpdate=false
 includeDevPackages=false
 otherOptions=()
 wwwDataUser=""
-
+import=false
+if SS_IMPORT_SSPAK_EVERY_TIME; then
+    echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
+    import=true
+fi
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -75,6 +85,11 @@ while [[ $# -gt 0 ]]; do
         ;;
     -e)
         SS_ENVIRONMENT_TYPE="$2"
+        shift 2
+        ;;
+    -i)
+        SS_IMPORT_SSPAK_EVERY_TIME="$2"
+        import=true
         shift 2
         ;;
     -a)
@@ -158,6 +173,14 @@ if $backup; then
         echo "Backup complete, please check ./__backups/backup.sspak"
         exit 0
     fi
+fi
+# Optional import
+if $import; then
+    mkdir -p ./__backups && cd ./__backups
+    wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
+    tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
+    ./ssbak load $SS_IMPORT_SSPAK_EVERY_TIME ..
+    rm -f ssbak ssbak_linux_amd64.tar.gz LICENSE README.md
 fi
 
 # Ensure branch exists
