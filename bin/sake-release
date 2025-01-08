@@ -95,6 +95,7 @@ while [[ $# -gt 0 ]]; do
     -i)
         SS_IMPORT_SSPAK_EVERY_TIME="$2"
         import=true
+        backup=true
         shift 2
         ;;
     -a)
