@@ -72,7 +72,7 @@ includeDevPackages=false
 otherOptions=()
 wwwDataUser=""
 import=false
-if SS_IMPORT_SSPAK_EVERY_TIME; then
+if [ -n "$FIA_RELEASE_PING_URL" ]; then
     echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
     import=true
 fi
@@ -179,8 +179,10 @@ if $import; then
     mkdir -p ./__backups && cd ./__backups
     wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
     tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
-    ./ssbak load $SS_IMPORT_SSPAK_EVERY_TIME ..
+    cd ..
+    __backups/ssbak load $SS_IMPORT_SSPAK_EVERY_TIME .
     rm -f ssbak ssbak_linux_amd64.tar.gz LICENSE README.md
+    exit 0
 fi
 
 # Ensure branch exists
