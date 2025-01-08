@@ -180,6 +180,7 @@ if $import; then
     wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
     tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
     cd ..
+    echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
     __backups/ssbak load $SS_IMPORT_SSPAK_EVERY_TIME .
     rm -f ssbak ssbak_linux_amd64.tar.gz LICENSE README.md
     exit 0
