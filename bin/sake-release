@@ -8,6 +8,7 @@ Usage:
 
 What it does:
     Runs a git pull, composer update, dev/build and optionally backups the site.
+    You can also import an sspak file, set permissions, update composer, include dev packages and run as a different user.
     If installed, it will also run vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
     If the environment is not 'dev', it will also flush the front-end (apache cache).
 
