@@ -77,7 +77,7 @@ includeDevPackages=false
 otherOptions=()
 wwwDataUser=""
 import=false
-if [ -n "$FIA_RELEASE_PING_URL" ]; then
+if [ -n "$SS_IMPORT_SSPAK_EVERY_TIME" ]; then
     echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
     import=true
 fi
