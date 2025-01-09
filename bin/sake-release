@@ -48,23 +48,48 @@ Examples:
 EOF
     exit 1
 }
+# Function to prepare the backup directory and download ssbak if needed
+prepare_backup_tools() {
+    mkdir -p ./__backups && cd ./__backups
+
+    if [ -f ssbak ] && [ "$(find ssbak -mtime -7)" ]; then
+        echo "ssbak is up-to-date, skipping download."
+    else
+        echo "Downloading latest ssbak..."
+        wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
+        tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
+        rm -f ssbak_linux_amd64.tar.gz LICENSE README.md
+    fi
+    cd ..
+}
 
 recordcommit() {
     {
         echo "========================="
-        echo $1
+        echo "$1"
         echo "========================="
-        echo "Time: $(date). START UPDATE:"
+        echo "Time: $(date '+%Y-%m-%d %H:%M:%S') - START UPDATE:"
         echo "Branch: $(git rev-parse --abbrev-ref HEAD)"
         git log -1 --format="Commit: %H%nMessage: %s%nAuthor: %an%nDate: %ad"
         git describe --all --long
     } >>release.log
 }
 
+# check .env file
 if [ -f ./.env ]; then
     source ./.env
 else
     echo "Error: .env file not found."
+    exit 1
+fi
+if [ -n "$SS_IMPORT_SSPAK_EVERY_TIME" ] && [ -f "$SS_IMPORT_SSPAK_EVERY_TIME" ]; then
+    echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
+    import=true
+else
+    echo "SS_IMPORT_SSPAK_EVERY_TIME is set but file does not exist or is invalid."
+fi
+if [ -z "$SS_ENVIRONMENT_TYPE" ]; then
+    echo "Error: SS_ENVIRONMENT_TYPE is not set. Exiting."
     exit 1
 fi
 
@@ -78,10 +103,8 @@ includeDevPackages=false
 otherOptions=()
 wwwDataUser=""
 import=false
-if [ -n "$SS_IMPORT_SSPAK_EVERY_TIME" ]; then
-    echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
-    import=true
-fi
+importOnly=false
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -96,7 +119,7 @@ while [[ $# -gt 0 ]]; do
     -i)
         SS_IMPORT_SSPAK_EVERY_TIME="$2"
         import=true
-        backup=true
+        importOnly=true
         shift 2
         ;;
     -a)
@@ -169,28 +192,33 @@ esac
 recordcommit "Starting release of $branch_name"
 
 # Optional backup
-if $backup; then
-    mkdir -p ./__backups && cd ./__backups
-    wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
-    tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
-    ./ssbak save .. ./backup.sspak
-    rm -f ssbak ssbak_linux_amd64.tar.gz LICENSE README.md
-    cd ../
-    if $backupOnly; then
+if [ "$backup" = true ] || [ "$import" = true ]; then
+    # Your code here
+    prepare_backup_tools
+    ./__backups/ssbak save . ./__backups/backup.sspak
+    echo "Backup complete, please check ./__backups/backup.sspak"
+    if [ "$backupOnly" = true ]; then
         echo "Backup complete, please check ./__backups/backup.sspak"
         exit 0
     fi
 fi
+
 # Optional import
-if $import; then
-    mkdir -p ./__backups && cd ./__backups
-    wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
-    tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
-    cd ..
-    echo "Importing sspak file $SS_IMPORT_SSPAK_EVERY_TIME"
-    __backups/ssbak load $SS_IMPORT_SSPAK_EVERY_TIME .
-    rm -f ssbak ssbak_linux_amd64.tar.gz LICENSE README.md
-    exit 0
+if [ "$import" = true ]; then
+    prepare_backup_tools
+    # Check if the specified SSPak file exists
+    if [ ! -f "$SS_IMPORT_SSPAK_EVERY_TIME" ]; then
+        echo "Error: SSPak file '$SS_IMPORT_SSPAK_EVERY_TIME' not found. Exiting."
+        exit 1
+    fi
+
+    # Import the SSPak file
+    echo "Importing SSPak file: $SS_IMPORT_SSPAK_EVERY_TIME"
+    ./__backups/ssbak load "$SS_IMPORT_SSPAK_EVERY_TIME" .
+    echo "Import complete."
+    if [ "$importOnly" = true ]; then
+        exit 0
+    fi
 fi
 
 # Ensure branch exists
@@ -205,7 +233,8 @@ fi
 echo "${SS_ENVIRONMENT_TYPE^^} environment"
 
 # Git and Composer operations
-git checkout "$branch_name" && git pull origin "$branch_name"
+git checkout "$branch_name" || exit 1
+git pull origin "$branch_name" || exit 1
 
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
     composer ${composerUpdate:+update} --prefer-source
