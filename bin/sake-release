@@ -56,6 +56,10 @@ prepare_backup_tools() {
         echo "ssbak is up-to-date, skipping download."
     else
         echo "Downloading latest ssbak..."
+        rm -f ssbak_linux_amd64.tar.gz LICENSE README.md ssbak
+        rm ssbak_linux_amd64.tar.gz -f
+        rm ssbak_linux_amd64.tar.gz.1 -f
+        rm ssbak_linux_amd64.tar.gz.2 -f
         wget -q https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz
         tar zxvf ssbak_linux_amd64.tar.gz && chmod +x ./ssbak
         rm -f ssbak_linux_amd64.tar.gz LICENSE README.md
