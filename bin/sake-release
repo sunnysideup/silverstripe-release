@@ -195,7 +195,11 @@ local)
     ;;
 esac
 
-recordcommit "Starting release of $branch_name"
+# Check if the import file is the same as the backup file
+if [ "$import" = true ] && [ "$SS_IMPORT_SSPAK_EVERY_TIME" == "./__backups/backup.sspak" ]; then
+    echo "Error: The import file cannot be the same as the backup file. Exiting."
+    exit 1
+fi
 
 # Optional backup
 if [ "$backup" = true ] || [ "$import" = true ]; then
@@ -228,6 +232,8 @@ if [ "$import" = true ]; then
         exit 0
     fi
 fi
+
+recordcommit "Starting release of $branch_name"
 
 # Ensure branch exists
 if ! git show-ref --verify --quiet refs/heads/$branch_name; then
