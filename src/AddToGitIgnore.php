@@ -11,6 +11,8 @@ class AddToGitIgnore implements Flushable
     {
         if (Director::isDev()) {
             self::addToGitIgnore();
+        } else {
+            self::createSakeSymlink();
         }
     }
 
@@ -39,6 +41,23 @@ class AddToGitIgnore implements Flushable
                     echo '</pre>';
                 }
             }
+        }
+    }
+
+    protected static function createSakeSymlink()
+    {
+        $baseFolder = Director::baseFolder();
+        $sakePath = $baseFolder . '/vendor/bin/sake';
+        $linkPath = $baseFolder . '/sake';
+
+        if (!file_exists($linkPath)) {
+            if (symlink($sakePath, $linkPath)) {
+                echo "Symlink created: $linkPath → $sakePath";
+            } else {
+                echo "Failed to create symlink.";
+            }
+        } else {
+            echo "Symlink or file already exists: $linkPath";
         }
     }
 }
