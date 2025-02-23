@@ -4,6 +4,7 @@ namespace Sunnysideup\Release;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Flushable;
+use SilverStripe\ORM\DB;
 
 class AddToGitIgnore implements Flushable
 {
@@ -52,12 +53,10 @@ class AddToGitIgnore implements Flushable
 
         if (!file_exists($linkPath)) {
             if (symlink($sakePath, $linkPath)) {
-                echo "Symlink created: $linkPath → $sakePath";
+                DB::alteration_message("Symlink created: $linkPath → $sakePath", 'created');
             } else {
-                echo "Failed to create symlink.";
+                DB::alteration_message("Failed to create symlink.", 'deleted');
             }
-        } else {
-            echo "Symlink or file already exists: $linkPath";
         }
     }
 }
