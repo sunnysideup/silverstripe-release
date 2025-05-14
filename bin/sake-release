@@ -303,7 +303,7 @@ fi
 # fi
 
 # Ping release URL if set
-[ -n "$FIA_RELEASE_PING_URL" ] && wget -S -qO- "${FIA_RELEASE_PING_URL}$(git rev-parse HEAD)"
+[ -n "$FIA_RELEASE_PING_URL" ] && wget -S -qO- "${FIA_RELEASE_PING_URL}/$(git rev-parse HEAD)"
 
 # Finalize release
 if [ -d "./vendor/firesphere/cspheaders" ]; then
