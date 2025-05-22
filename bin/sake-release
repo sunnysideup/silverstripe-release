@@ -23,8 +23,8 @@ What it does:
     SS_IMPORT_SSPAK_EVERY_TIME (optional, set to a file name to import sspak every time)
 
 Options:
-   -a    Backup (default: no)
-   -o    Backup only (default: no)
+   -a    Backup db (default: no) - if set to all - it will also backup the files
+   -o    Backup db only (default: no) - if set to all - it will also backup the files
    -e    Override environment type set in .env
    -i    Import an sspak file (default: no import)
    -w    Run as specified user (default: no, set to a user like www-data)
@@ -100,6 +100,7 @@ fi
 # Default variables
 branch_name=""
 backup=false
+backupFilesAsWell=false
 backupOnly=false
 setPermissions=false
 composerUpdate=false
@@ -128,12 +129,24 @@ while [[ $# -gt 0 ]]; do
         ;;
     -a)
         backup=true
-        shift
+        aValue="$1"
+        if [ -n "$aValue" ] && [[ "$aValue" != -* ]]; then
+            shift
+            if [ "$aValue" = 'all' ]; then
+                backupFilesAsWell=true
+            fi
+        fi
         ;;
     -o)
-        backup=true
         backupOnly=true
-        shift
+        backup=true
+        oValue="$1"
+        if [ -n "$oValue" ] && [[ "$oValue" != -* ]]; then
+            shift
+            if [ "$oValue" = 'all' ]; then
+                backupFilesAsWell=true
+            fi
+        fi
         ;;
     -p)
         setPermissions=true
@@ -205,10 +218,13 @@ fi
 if [ "$backup" = true ] || [ "$import" = true ]; then
     # Your code here
     prepare_backup_tools
-    ./__backups/ssbak save . ./__backups/backup.sspak
+    if [ "$backupFilesAsWell" = true ]; then
+        ./__backups/ssbak save ./__backups/backup.sspak ./mysite
+    else
+        ./__backups/ssbak save --db ./__backups/backup.sspak ./mysite
+    fi
     echo "Backup complete, please check ./__backups/backup.sspak"
     if [ "$backupOnly" = true ]; then
-        echo "Backup complete, please check ./__backups/backup.sspak"
         rm release-running -f
         exit 0
     fi
