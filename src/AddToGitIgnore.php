@@ -20,7 +20,7 @@ class AddToGitIgnore implements Flushable
     protected static function addToGitIgnore()
     {
         $filePath = Director::baseFolder() . '/' . '.gitignore';
-        $linesToAdd = ['/release.log', '/release_running'];
+        $linesToAdd = ['/release.log', '/release_running', '/release-running'];
         if (!file_exists($filePath)) {
 
             file_put_contents($filePath, implode(PHP_EOL, $linesToAdd) . PHP_EOL);
