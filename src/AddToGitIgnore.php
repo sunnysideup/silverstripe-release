@@ -50,12 +50,13 @@ class AddToGitIgnore implements Flushable
         $baseFolder = Director::baseFolder();
         $sakePath = $baseFolder . '/vendor/bin/sake';
         $linkPath = $baseFolder . '/sake';
-
-        if (!file_exists($linkPath)) {
-            if (symlink($sakePath, $linkPath)) {
-                DB::alteration_message("Symlink created: $linkPath → $sakePath", 'created');
-            } else {
-                DB::alteration_message("Failed to create symlink.", 'deleted');
+        if (! Director::isDev()) {
+            if (!file_exists($linkPath)) {
+                if (symlink($sakePath, $linkPath)) {
+                    DB::alteration_message("Symlink created: $linkPath → $sakePath", 'created');
+                } else {
+                    DB::alteration_message("Failed to create symlink.", 'deleted');
+                }
             }
         }
     }
