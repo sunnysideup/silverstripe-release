@@ -1,6 +1,5 @@
 <?php
 
-use SilverStripe\Core\Convert
 
 $obj = new ReleaseProjectFromBitbucketHook();
 $obj->run();
@@ -166,7 +165,7 @@ class Add
     private function abort(string $reason)
     {
         if ($this->isSafeEnvironment()) {
-            echo 'Aborted because of ' . Convert::raw2att($reason);
+            echo 'Aborted because of ' . htmlentities($reason);
         } else {
             header('HTTP/1.1 403 Forbidden');
         }
