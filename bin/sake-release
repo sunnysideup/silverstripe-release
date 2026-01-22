@@ -264,6 +264,7 @@ echo "${SS_ENVIRONMENT_TYPE^^} environment"
 
 # Git and Composer operations
 git checkout "$branch_name" || exit 1
+git checkout ./public/.htaccess
 git pull origin "$branch_name" || exit 1
 
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
