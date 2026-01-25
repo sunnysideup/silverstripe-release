@@ -328,6 +328,7 @@ if [ -d "./vendor/firesphere/cspheaders" ]; then
 fi
 
 [ -d "$TEMP_PATH" ] && rm -rf "${TEMP_PATH:?}/*"
+[ -d public/.cache ] && rm -rf public/.cache/* 
 
 recordcommit "Finished release of $branch_name"
 
