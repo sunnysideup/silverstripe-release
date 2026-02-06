@@ -29,7 +29,7 @@ class AddToGitIgnore implements Flushable
         $currentContent = file($filePath, FILE_IGNORE_NEW_LINES);
         $missingLines = array_filter($linesToAdd, fn($line) => !in_array($line, $currentContent));
 
-        if (!empty($missingLines)) {
+        if ($missingLines !== []) {
             if (is_writable($filePath)) {
                 file_put_contents($filePath, PHP_EOL . implode(PHP_EOL, $missingLines) . PHP_EOL, FILE_APPEND);
             } else {
@@ -38,9 +38,6 @@ class AddToGitIgnore implements Flushable
                     echo '<pre>';
                 }
                 die('ERROR: Please add the following lines to your .gitignore file: ' . PHP_EOL . implode(PHP_EOL, $missingLines) . PHP_EOL);
-                if (!Director::is_cli()) {
-                    echo '</pre>';
-                }
             }
         }
     }
