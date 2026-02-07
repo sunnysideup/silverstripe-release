@@ -1,6 +1,5 @@
 <?php
 
-
 $obj = new ReleaseProjectFromBitbucketHook();
 $obj->run();
 

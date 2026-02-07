@@ -21,20 +21,20 @@ class AddToGitIgnore implements Flushable
     {
         $filePath = Director::baseFolder() . '/' . '.gitignore';
         $linesToAdd = ['/release.log', '/release_running', '/release-running'];
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
 
             file_put_contents($filePath, implode(PHP_EOL, $linesToAdd) . PHP_EOL);
             return;
         }
         $currentContent = file($filePath, FILE_IGNORE_NEW_LINES);
-        $missingLines = array_filter($linesToAdd, fn($line) => !in_array($line, $currentContent));
+        $missingLines = array_filter($linesToAdd, fn ($line) => ! in_array($line, $currentContent));
 
         if ($missingLines !== []) {
             if (is_writable($filePath)) {
                 file_put_contents($filePath, PHP_EOL . implode(PHP_EOL, $missingLines) . PHP_EOL, FILE_APPEND);
             } else {
 
-                if (!Director::is_cli()) {
+                if (! Director::is_cli()) {
                     echo '<pre>';
                 }
                 die('ERROR: Please add the following lines to your .gitignore file: ' . PHP_EOL . implode(PHP_EOL, $missingLines) . PHP_EOL);
@@ -48,11 +48,11 @@ class AddToGitIgnore implements Flushable
         $sakePath = $baseFolder . '/vendor/bin/sake';
         $linkPath = $baseFolder . '/sake';
         if (! Director::isDev()) {
-            if (!file_exists($linkPath) && file_exists($sakePath)) {
+            if (! file_exists($linkPath) && file_exists($sakePath)) {
                 if (symlink($sakePath, $linkPath)) {
                     DB::alteration_message("Symlink created: $linkPath → $sakePath", 'created');
                 } else {
-                    DB::alteration_message("Failed to create symlink.", 'deleted');
+                    DB::alteration_message('Failed to create symlink.', 'deleted');
                 }
             }
             if (! file_exists($sakePath)) {
