@@ -272,6 +272,8 @@ if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
 else
     composer install --prefer-dist ${includeDevPackages:+} --no-dev
 fi
+composer dumpautoload
+composer vendor-expose
 
 # Set permissions if needed
 if $setPermissions; then
