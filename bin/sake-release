@@ -278,15 +278,15 @@ composer vendor-expose
 # Set permissions if needed
 if $setPermissions; then
     if [ -n "$wwwDataUser" ]; then
-        sudo -u "$wwwDataUser" mkdir -p public/assets .graphql-generated public/_graphql 
+        sudo -u "$wwwDataUser" mkdir -p public/assets .graphql-generated public/_graphql
         # try again - just in case...
-        sudo mkdir -p public/assets .graphql-generated public/_graphql 
-        sudo chown -R $wwwDataUser public/assets .graphql-generated public/_graphql 
+        sudo mkdir -p public/assets .graphql-generated public/_graphql
+        sudo chown -R $wwwDataUser public/assets .graphql-generated public/_graphql
     else
-        mkdir -p public/assets .graphql-generated public/_graphql 
+        mkdir -p public/assets .graphql-generated public/_graphql
     fi
 fi
-rm 
+
 # Run SilverStripe dev/build
 if [ -n "$wwwDataUser" ]; then
     sudo -u "$wwwDataUser" vendor/bin/sake dev/build flush=all
@@ -332,13 +332,13 @@ fi
 if [ -d "./vendor/firesphere/cspheaders" ]; then
     if [ -n "$wwwDataUser" ]; then
         sudo -u "$wwwDataUser"  vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
-    else 
+    else
         vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
     fi
 fi
 
 [ -d "$TEMP_PATH" ] && sudo rm -rf "${TEMP_PATH:?}/*"
-[ -d public/.cache ] && sudo rm -rf public/.cache/* 
+[ -d public/.cache ] && sudo rm -rf public/.cache/*
 
 recordcommit "Finished release of $branch_name"
 
