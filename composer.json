@@ -14,8 +14,7 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "silverstripe/framework": "^4.0 || ^5.0",
-        "sunnysideup/flush-front-end": "dev-master"
+        "silverstripe/framework": "^6.0"
     },
     "authors": [
         {
@@ -31,5 +30,12 @@
     },
     "bin": [
         "bin/sake-release"
-    ]
+    ],
+    "yet-to-update": {
+        "sunnysideup/flush-front-end": {
+            "section": "require",
+            "current": "dev-master",
+            "reason": "no-compatible-stable-release"
+        }
+    }
 }
