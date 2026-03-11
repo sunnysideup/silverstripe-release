@@ -48,6 +48,7 @@ Examples:
 EOF
     exit 1
 }
+
 # Function to prepare the backup directory and download ssbak if needed
 prepare_backup_tools() {
     mkdir -p ./__backups && cd ./__backups
@@ -78,6 +79,9 @@ recordcommit() {
         git describe --all --long
     } >>release.log
 }
+
+SUDO=""
+command -v sudo &>/dev/null && SUDO="sudo"
 
 # check .env file
 if [ -f ./.env ]; then
@@ -168,6 +172,10 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
+
+RUN_AS=""
+[ -n "$wwwDataUser" ] && [ -n "$SUDO" ] && RUN_AS="sudo -u $wwwDataUser"
+
 # Define a cleanup function and set the trap
 trap 'echo "An error occurred. "; rm -f release-running; exit 1' ERR
 
@@ -184,7 +192,6 @@ touch release-running release.log
 branch_name=${otherOptions[0]:-${SS_RELEASE_BRANCH:-$SS_ENVIRONMENT_TYPE}}
 
 # Set default branches based on alias
-# staging is included to show it is part of the deal.
 case "$branch_name" in
 live)
     branch_name="production"
@@ -200,11 +207,11 @@ test)
     ;;
 dev)
     branch_name="develop"
-    SS_ENVIRONMENT_TYPE="test" # this is the develop on the server - so we set it to test!
+    SS_ENVIRONMENT_TYPE="test"
     ;;
 local)
     branch_name="develop"
-    SS_ENVIRONMENT_TYPE="dev" # this is the develop on the server - so we set it to test!
+    SS_ENVIRONMENT_TYPE="dev"
     ;;
 esac
 
@@ -216,7 +223,6 @@ fi
 
 # Optional backup
 if [ "$backup" = true ] || [ "$import" = true ]; then
-    # Your code here
     prepare_backup_tools
     if [ "$backupFilesAsWell" = true ]; then
         ./__backups/ssbak save ./__backups/backup.sspak ./mysite
@@ -233,13 +239,11 @@ fi
 # Optional import
 if [ "$import" = true ]; then
     prepare_backup_tools
-    # Check if the specified SSPak file exists
     if [ ! -f "$SS_IMPORT_SSPAK_EVERY_TIME" ]; then
         echo "Error: SSPak file '$SS_IMPORT_SSPAK_EVERY_TIME' not found. Exiting."
         exit 1
     fi
 
-    # Import the SSPak file
     echo "Importing SSPak file: $SS_IMPORT_SSPAK_EVERY_TIME"
     ./__backups/ssbak load "$SS_IMPORT_SSPAK_EVERY_TIME" .
     echo "Import complete."
@@ -255,7 +259,7 @@ recordcommit "Starting release of $branch_name"
 if ! git show-ref --verify --quiet refs/heads/$branch_name; then
     echo "Branch '$branch_name' not found. Fetching..."
     git fetch --all || exit 1
-else # Ensure branch is up-to-date
+else
     echo "Fetching latest changes for '$branch_name'..."
     git fetch origin $branch_name
 fi
@@ -277,68 +281,37 @@ composer vendor-expose
 
 # Set permissions if needed
 if $setPermissions; then
-    if [ -n "$wwwDataUser" ]; then
-        sudo -u "$wwwDataUser" mkdir -p public/assets .graphql-generated public/_graphql
+    if [ -n "$RUN_AS" ]; then
+        $RUN_AS mkdir -p public/assets .graphql-generated public/_graphql
         # try again - just in case...
-        sudo mkdir -p public/assets .graphql-generated public/_graphql
-        sudo chown -R $wwwDataUser public/assets .graphql-generated public/_graphql
+        $SUDO mkdir -p public/assets .graphql-generated public/_graphql
+        $SUDO chown -R $wwwDataUser public/assets .graphql-generated public/_graphql
     else
         mkdir -p public/assets .graphql-generated public/_graphql
     fi
 fi
 
 # Run SilverStripe dev/build
-if [ -n "$wwwDataUser" ]; then
-    sudo -u "$wwwDataUser" vendor/bin/sake dev/build flush=all
+if [ -n "$RUN_AS" ]; then
+    $RUN_AS vendor/bin/sake dev/build flush=all
 else
     vendor/bin/sake dev/build flush=all
 fi
-
-# if [ "$SS_ENVIRONMENT_TYPE" != "dev" ]; then
-#     # build
-#     if [ "$SS_RELEASE_FRONT_END" != "false" ]; then
-#         FILE_PATH="./.env"
-#         BASE_URL=$(grep -oP 'SS_BASE_URL="\K[^"]+' $FILE_PATH)
-#         # Check if BASE_URL was successfully set
-#         if [ -z "$BASE_URL" ]; then
-#             echo "Error: SS_BASE_URL is not set in $FILE_PATH. Exiting."
-#             exit 1
-#         fi
-#         # Remove any trailing slash
-#         BASE_URL="${BASE_URL%/}"
-#         NEW_URL="${BASE_URL}/dev/?flush=all"
-
-#         # if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-#         #     sed -i 's/SS_ENVIRONMENT_TYPE="test"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
-#         # elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-#         #     sed -i 's/SS_ENVIRONMENT_TYPE="live"/SS_ENVIRONMENT_TYPE="dev"/g' $FILE_PATH
-#         # fi
-
-#         # wget -O - $NEW_URL
-
-#         # # Switch SS_ENVIRONMENT_TYPE back to its original value
-#         # if [ "$SS_ENVIRONMENT_TYPE" == "test" ]; then
-#         #     sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="test"/g' $FILE_PATH
-#         # elif [ "$SS_ENVIRONMENT_TYPE" == "live" ]; then
-#         #     sed -i 's/SS_ENVIRONMENT_TYPE="dev"/SS_ENVIRONMENT_TYPE="live"/g' $FILE_PATH
-#         # fi
-#     fi
-# fi
 
 # Ping release URL if set
 [ -n "$FIA_RELEASE_PING_URL" ] && wget -S -qO- "${FIA_RELEASE_PING_URL}/$(git rev-parse HEAD)"
 
 # Finalize release
 if [ -d "./vendor/firesphere/cspheaders" ]; then
-    if [ -n "$wwwDataUser" ]; then
-        sudo -u "$wwwDataUser"  vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
+    if [ -n "$RUN_AS" ]; then
+        $RUN_AS vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
     else
         vendor/bin/sake dev/tasks/Firesphere-CSPHeaders-Tasks-SRIRefreshTask
     fi
 fi
 
-[ -d "$TEMP_PATH" ] && sudo rm -rf "${TEMP_PATH:?}/*"
-[ -d public/.cache ] && sudo rm -rf public/.cache/*
+[ -d "$TEMP_PATH" ] && $SUDO rm -rf "${TEMP_PATH:?}/*"
+[ -d public/.cache ] && $SUDO rm -rf public/.cache/*
 
 recordcommit "Finished release of $branch_name"
 
