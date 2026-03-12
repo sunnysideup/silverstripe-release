@@ -26,6 +26,7 @@ class AddToGitIgnore implements Flushable
             file_put_contents($filePath, implode(PHP_EOL, $linesToAdd) . PHP_EOL);
             return;
         }
+
         $currentContent = file($filePath, FILE_IGNORE_NEW_LINES);
         $missingLines = array_filter($linesToAdd, fn ($line) => ! in_array($line, $currentContent));
 
@@ -37,6 +38,7 @@ class AddToGitIgnore implements Flushable
                 if (! Director::is_cli()) {
                     echo '<pre>';
                 }
+
                 die('ERROR: Please add the following lines to your .gitignore file: ' . PHP_EOL . implode(PHP_EOL, $missingLines) . PHP_EOL);
             }
         }
@@ -50,13 +52,14 @@ class AddToGitIgnore implements Flushable
         if (! Director::isDev()) {
             if (! file_exists($linkPath) && file_exists($sakePath)) {
                 if (symlink($sakePath, $linkPath)) {
-                    DB::alteration_message("Symlink created: $linkPath → $sakePath", 'created');
+                    DB::alteration_message(sprintf('Symlink created: %s → %s', $linkPath, $sakePath), 'created');
                 } else {
                     DB::alteration_message('Failed to create symlink.', 'deleted');
                 }
             }
+
             if (! file_exists($sakePath)) {
-                DB::alteration_message("The sake file does not exist at: $sakePath", 'deleted');
+                DB::alteration_message('The sake file does not exist at: ' . $sakePath, 'deleted');
             }
         }
     }

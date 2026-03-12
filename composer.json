@@ -1,36 +1,35 @@
 {
-  "name": "sunnysideup/release",
-  "type": "silverstripe-vendormodule",
-  "description": "Auto-release latest version of a branch.",
-  "keywords": [
-    "Silverstripe-CMS",
-    "CMS",
-    "Silverstripe",
-    "git",
-    "pipelines",
-    "bitbucket",
-    "CI",
-    "release"
-  ],
-  "license": "BSD-3-Clause",
-  "require": {
-    "silverstripe/framework": "^4.0 || ^5.0",
-    "sunnysideup/flush-front-end": "dev-master"
-  },
-  "authors": [
-    {
-      "name": "Nicolaas Francken",
-      "email": "modules@sunnysideup.co.nz",
-      "role": "lead developer"
-    }
-
-  ],
-  "extra-example": {
-    "expose": [
-      "client"
+    "name": "sunnysideup/release",
+    "type": "silverstripe-vendormodule",
+    "description": "Auto-release latest version of a branch.",
+    "keywords": [
+        "Silverstripe-CMS",
+        "CMS",
+        "Silverstripe",
+        "git",
+        "pipelines",
+        "bitbucket",
+        "CI",
+        "release"
+    ],
+    "license": "BSD-3-Clause",
+    "require": {
+        "silverstripe/framework": "^6.0",
+        "sunnysideup/flush-front-end": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "Nicolaas Francken",
+            "email": "modules@sunnysideup.co.nz",
+            "role": "lead developer"
+        }
+    ],
+    "extra-example": {
+        "expose": [
+            "client"
+        ]
+    },
+    "bin": [
+        "bin/sake-release"
     ]
-  },
-  "bin": [
-    "bin/sake-release"
-  ]
 }
