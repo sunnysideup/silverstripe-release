@@ -115,7 +115,8 @@ class Add
                 $scriptPath = realpath($scriptPath);
                 if (is_executable($scriptPath)) {
                     echo '<h1>' . $scriptPath . '</h1>';
-                    $output = shell_exec('bash ' . $scriptPath . ' 2>&1');
+                    $output = '';
+                    // $output = shell_exec('bash ' . $scriptPath . ' 2>&1');
                     echo "<pre>{$output}</pre>";
                     die('<h1>DONE</h1>');
                 }
