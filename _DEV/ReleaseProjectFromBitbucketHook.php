@@ -45,7 +45,7 @@ class Add
 
     protected function getVars(): bool
     {
-        $this->absoluteDirOfThisScript = realpath(dirname(__FILE__));
+        $this->absoluteDirOfThisScript = realpath(__DIR__);
         $this->findDotEnvFile();
         $this->loadDotEnvFile();
         $this->envType = getenv('SS_ENVIRONMENT_TYPE');
@@ -116,7 +116,7 @@ class Add
                 if (is_executable($scriptPath)) {
                     echo '<h1>' . $scriptPath . '</h1>';
                     $output = shell_exec('bash ' . $scriptPath . ' 2>&1');
-                    echo "<pre>{$output}</pre>";
+                    echo sprintf('<pre>%s</pre>', $output);
                     die('<h1>DONE</h1>');
                 }
 
@@ -151,11 +151,11 @@ class Add
 
     private function isIpInRange($range): bool
     {
-        list($range, $netmask) = explode('/', $range, 2);
+        [$range, $netmask] = explode('/', (string) $range, 2);
         $netmask = (int) $netmask;
         $ipLong = ip2long($this->ip);
         $rangeLong = ip2long($range);
-        $wildcard = pow(2, (32 - $netmask)) - 1;
+        $wildcard = 2 ** (32 - $netmask) - 1;
         $netmask = ~$wildcard;
 
         return ($ipLong & $netmask) === ($rangeLong & $netmask);
@@ -174,7 +174,7 @@ class Add
 
     private function isSafeEnvironment(): bool
     {
-        $test = strtolower($this->envType);
+        $test = strtolower((string) $this->envType);
 
         return 'test' === $test || 'dev' === $test;
     }
@@ -208,7 +208,7 @@ class Add
         }
 
         if (! file_exists($myPathAbsolute)) {
-            throw new \InvalidArgumentException(sprintf('%s does not exist', $myPathAbsolute));
+            throw new InvalidArgumentException(sprintf('%s does not exist', $myPathAbsolute));
         }
 
         $this->path = $myPathAbsolute;
@@ -217,16 +217,16 @@ class Add
     private function loadDotEnvFile(): void
     {
         if (! is_readable($this->path)) {
-            throw new \RuntimeException(sprintf('%s file is not readable', $this->path));
+            throw new RuntimeException(sprintf('%s file is not readable', $this->path));
         }
 
         $lines = file($this->path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
-            if (0 === strpos(trim($line), '#')) {
+            if (str_starts_with(trim($line), '#')) {
                 continue;
             }
 
-            list($name, $value) = explode('=', $line, 2);
+            [$name, $value] = explode('=', $line, 2);
             $name = trim($name);
             $value = trim($value);
             $value = trim($value, '"');
