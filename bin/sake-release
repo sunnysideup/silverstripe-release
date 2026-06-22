@@ -310,6 +310,8 @@ if [ -d "./vendor/firesphere/cspheaders" ]; then
     fi
 fi
 
+composer vendor-expose
+
 [ -d "$TEMP_PATH" ] && $SUDO rm -rf "${TEMP_PATH:?}/*"
 [ -d public/.cache ] && $SUDO rm -rf public/.cache/*
 
