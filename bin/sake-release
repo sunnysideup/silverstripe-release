@@ -85,9 +85,10 @@ command -v sudo &>/dev/null && SUDO="sudo"
 
 # check .env file
 if [ -f ./.env ]; then
-    source ./.env
+    # The || triggers only if 'source' returns a non-zero exit code
+    source ./.env || echo "Error: Failed to load .env. Check for typos!" >&2
 else
-    echo "Error: .env file not found."
+    echo "No .env file found"
     exit 1
 fi
 if [ -n "$SS_IMPORT_SSPAK_EVERY_TIME" ] && [ -f "$SS_IMPORT_SSPAK_EVERY_TIME" ]; then
