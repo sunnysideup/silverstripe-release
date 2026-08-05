@@ -267,10 +267,36 @@ fi
 
 echo "${SS_ENVIRONMENT_TYPE^^} environment"
 
-# Git and Composer operations
+# Backup uncommitted changes as a diff (unchanged from yours)
+if ! git diff HEAD --quiet; then
+    TIMESTAMP=$(date +"%d-%m-%y-%H%M")
+    git diff HEAD > "pre-upgrade-${TIMESTAMP}.diff"
+    echo "Changes detected: Saved to pre-upgrade-${TIMESTAMP}.diff"
+else
+    echo "Working directory clean: No diff created."
+fi
+
+# Discard any local UNCOMMITTED changes to public/.htaccess so origin wins
+git checkout -- public/.htaccess 2>/dev/null || true
+
 git checkout "$branch_name" || exit 1
-git checkout ./public/.htaccess
-git pull origin "$branch_name" || exit 1
+
+# Pull — don't exit on failure yet, since a conflict may only be htaccess
+if ! git pull origin "$branch_name"; then
+    # Resolve htaccess in favour of origin
+    if git ls-files -u -- public/.htaccess | grep -q .; then
+        git checkout --theirs -- public/.htaccess
+        git add public/.htaccess
+    fi
+    # Any OTHER unmerged files = a real conflict → abort loudly
+    if git ls-files -u | grep -q .; then
+        echo "Merge conflict beyond public/.htaccess — aborting." >&2
+        git merge --abort 2>/dev/null || true
+        exit 1
+    fi
+    # Only htaccess conflicted; finish the merge that git paused
+    git commit --no-edit || exit 1
+fi
 
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
     composer ${composerUpdate:+update} --prefer-source
