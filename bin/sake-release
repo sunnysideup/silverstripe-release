@@ -23,8 +23,8 @@ What it does:
     SS_IMPORT_SSPAK_EVERY_TIME (optional, set to a file name to import sspak every time)
 
 Options:
-   -a    Backup db (default: no) - if set to all - it will also backup the files
-   -o    Backup db only (default: no) - if set to all - it will also backup the files
+   -a    Backup db (default: no) - append 'all' to also back up the files
+   -o    Backup db only (default: no) - append 'all' to also back up the files
    -e    Override environment type set in .env
    -i    Import an sspak file (default: no import)
    -w    Run as specified user (default: no, set to a user like www-data)
@@ -36,6 +36,9 @@ Options:
 Examples:
    # Backup & release
    vendor/bin/sake-release -a
+
+   # Backup db + files, then release
+   vendor/bin/sake-release -a all
 
    # release of 'develop' branch
    vendor/bin/sake-release develop
@@ -85,8 +88,11 @@ command -v sudo &>/dev/null && SUDO="sudo"
 
 # check .env file
 if [ -f ./.env ]; then
-    # The || triggers only if 'source' returns a non-zero exit code
-    source ./.env || echo "Error: Failed to load .env. Check for typos!" >&2
+    # Fail hard if .env can't be loaded — a release must not run with missing config
+    source ./.env || {
+        echo "Error: Failed to load .env. Check for typos!" >&2
+        exit 1
+    }
 else
     echo "No .env file found"
     exit 1
@@ -134,23 +140,19 @@ while [[ $# -gt 0 ]]; do
         ;;
     -a)
         backup=true
-        aValue="$1"
-        if [ -n "$aValue" ] && [[ "$aValue" != -* ]]; then
+        shift
+        if [ "${1:-}" = 'all' ]; then
+            backupFilesAsWell=true
             shift
-            if [ "$aValue" = 'all' ]; then
-                backupFilesAsWell=true
-            fi
         fi
         ;;
     -o)
-        backupOnly=true
         backup=true
-        oValue="$1"
-        if [ -n "$oValue" ] && [[ "$oValue" != -* ]]; then
+        backupOnly=true
+        shift
+        if [ "${1:-}" = 'all' ]; then
+            backupFilesAsWell=true
             shift
-            if [ "$oValue" = 'all' ]; then
-                backupFilesAsWell=true
-            fi
         fi
         ;;
     -p)
@@ -177,8 +179,10 @@ done
 RUN_AS=""
 [ -n "$wwwDataUser" ] && [ -n "$SUDO" ] && RUN_AS="sudo -u $wwwDataUser"
 
-# Define a cleanup function and set the trap
-trap 'echo "An error occurred. "; rm -f release-running; exit 1' ERR
+# Always clean up the lock file, however we exit (normal, error, or `|| exit 1`)
+trap 'rm -f release-running' EXIT
+# Report and stop on any unhandled command failure
+trap 'echo "An error occurred." >&2; exit 1' ERR
 
 # If release is running, wait
 if [ -f "release-running" ]; then
@@ -257,51 +261,75 @@ fi
 recordcommit "Starting release of $branch_name"
 
 # Ensure branch exists
-if ! git show-ref --verify --quiet refs/heads/$branch_name; then
+if ! git show-ref --verify --quiet "refs/heads/$branch_name"; then
     echo "Branch '$branch_name' not found. Fetching..."
     git fetch --all || exit 1
 else
     echo "Fetching latest changes for '$branch_name'..."
-    git fetch origin $branch_name
+    git fetch origin "$branch_name"
 fi
 
 echo "${SS_ENVIRONMENT_TYPE^^} environment"
 
-# Backup uncommitted changes as a diff (unchanged from yours)
+# Back up ALL local (tracked) changes as a diff — the safety record for both paths.
+# Untracked files (anything not in git) are never touched by what follows, so they
+# are always kept on disk.
 if ! git diff HEAD --quiet; then
     TIMESTAMP=$(date +"%d-%m-%y-%H%M")
-    git diff HEAD > "pre-upgrade-${TIMESTAMP}.diff"
+    git diff HEAD >"pre-upgrade-${TIMESTAMP}.diff"
     echo "Changes detected: Saved to pre-upgrade-${TIMESTAMP}.diff"
 else
     echo "Working directory clean: No diff created."
 fi
 
-# Discard any local UNCOMMITTED changes to public/.htaccess so origin wins
-git checkout -- public/.htaccess 2>/dev/null || true
+if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
+    # DEV: keep local work. Only force origin's public/.htaccess, then pull.
+    git checkout -- public/.htaccess 2>/dev/null || true
+    git checkout "$branch_name" || exit 1
 
-git checkout "$branch_name" || exit 1
-
-# Pull — don't exit on failure yet, since a conflict may only be htaccess
-if ! git pull origin "$branch_name"; then
-    # Resolve htaccess in favour of origin
-    if git ls-files -u -- public/.htaccess | grep -q .; then
-        git checkout --theirs -- public/.htaccess
-        git add public/.htaccess
+    # Pull — don't exit on failure yet, since a conflict may only be htaccess
+    if ! git pull origin "$branch_name"; then
+        # Pull failed but left NO unmerged files → not a conflict
+        # (network, diverged branches, "local changes would be overwritten", etc.)
+        if ! git ls-files -u | grep -q .; then
+            echo "git pull failed with no merge conflict — aborting." >&2
+            exit 1
+        fi
+        # Resolve htaccess in favour of origin (theirs = incoming side of a merge)
+        if git ls-files -u -- public/.htaccess | grep -q .; then
+            git checkout --theirs -- public/.htaccess
+            git add public/.htaccess
+        fi
+        # Any OTHER unmerged files = a real conflict → abort loudly
+        if git ls-files -u | grep -q .; then
+            echo "Merge conflict beyond public/.htaccess — aborting." >&2
+            git merge --abort 2>/dev/null || true
+            exit 1
+        fi
+        # Only htaccess conflicted; finish the merge that git paused
+        git commit --no-edit || exit 1
     fi
-    # Any OTHER unmerged files = a real conflict → abort loudly
-    if git ls-files -u | grep -q .; then
-        echo "Merge conflict beyond public/.htaccess — aborting." >&2
-        git merge --abort 2>/dev/null || true
-        exit 1
-    fi
-    # Only htaccess conflicted; finish the merge that git paused
-    git commit --no-edit || exit 1
+else
+    # NON-DEV: origin wins for everything tracked. The diff above is the record of
+    # what gets discarded. `reset --hard` throws away local changes to TRACKED files
+    # but never removes untracked files, so anything not in git is kept.
+    echo "Non-dev: hard-resetting to origin/$branch_name (untracked files kept)."
+    git checkout -f "$branch_name" || exit 1
+    git reset --hard "origin/$branch_name" || exit 1
 fi
 
+# Composer. Dev updates by default. Non-dev installs (use -u to update instead)
+# and honours -d to include dev packages.
 if [ "$SS_ENVIRONMENT_TYPE" == "dev" ]; then
-    composer ${composerUpdate:+update} --prefer-source
+    composer update --prefer-source
 else
-    composer install --prefer-dist ${includeDevPackages:+} --no-dev
+    composerArgs=(--prefer-dist)
+    [ "$includeDevPackages" = true ] || composerArgs+=(--no-dev)
+    if [ "$composerUpdate" = true ]; then
+        composer update "${composerArgs[@]}"
+    else
+        composer install "${composerArgs[@]}"
+    fi
 fi
 composer dumpautoload -o
 composer vendor-expose
